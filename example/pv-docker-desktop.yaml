@@ -19,7 +19,7 @@ spec:
   storageClassName: disk-csi
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: /run/desktop/mnt/host/c/Users/Quadrant/minimount
+    path: {{LOCAL_PATH}}
 ---
 # Source: qmig/templates/air/air-pvc.yaml
 apiVersion: v1
