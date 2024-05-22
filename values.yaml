@@ -1,0 +1,693 @@
+# Default values for qmig-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+globals:
+  projectId: "1167"
+  persistentVolume:
+    ## If false, use emptyDir
+    enabled: true
+
+    ## Must match those of existing PV or dynamic provisioner
+    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    accessModes:
+      - ReadWriteMany
+
+    ## data Persistent Volume Claim annotations
+    annotations: {}
+
+    ## Requires app.persistentVolume.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    existingClaim: "qmig-shared"
+
+    ## Subdirectory of data Persistent Volume to mount
+    ## Useful if the volume's root directory is not empty
+    ##
+    subPath: cloud
+
+    ## data Persistent Volume size
+    ##
+    size: 5Gi
+
+    ## data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    storageClass: "file-csi"
+
+    ## data Persistent Volume Binding Mode
+    ## If defined, volumeBindingMode: <volumeBindingMode>
+    ## If undefined (the default) or set to null, no volumeBindingMode spec is
+    ##   set, choosing the default mode.
+    ##
+    # volumeBindingMode: """
+
+ingressController:
+  enabled: true
+  controllerImage:
+    repository: qmigrator.azurecr.io/ingress-nginx/controller
+    tag: "v1.9.4"
+  webhookImage:
+    repository: qmigrator.azurecr.io/ingress-nginx/kube-webhook-certgen
+    tag: "v20231011-8b53cabe0"
+  imagePullSecrets:
+    - name: docker-auth
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+rbac:
+  ## - if `false`, you must create a custom Role and RoleBinding
+  ##   for the ServiceAccount defined in `serviceAccount.name`
+  create: true
+
+app:
+  name: "app"
+  replicaCount: 1
+  statefulSet:
+    enabled: false
+  image:
+    repository: qmigrator.azurecr.io/qubeapp
+    pullPolicy: IfNotPresent
+    tag: "q969"
+
+  imagePullSecrets:
+    - name: docker-auth
+    
+  readinessProbe:
+    enabled: "true"
+  livenessProbe:
+    enabled: "true"
+
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+
+  service:
+    annotations: {}
+    type: ClusterIP
+    port: 4200
+
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/use-regex: "true"
+    hosts:
+      # - host: "{{PROJECT_NAME}}ui.qmigrator.ai"
+      - paths:
+        - path: /
+          pathType: Prefix
+    # tls:
+    #   - secretName: qmig-app
+    #     hosts:
+    #       - "{{PROJECT_NAME}}ui.qmigrator.ai"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 300Mi
+    limits:
+      cpu: 300m
+      memory: 600Mi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+eng:
+  name: "eng"
+  replicaCount: 1
+  statefulSet:
+    enabled: false
+  image:
+    repository: qmigrator.azurecr.io/qubeeng
+    pullPolicy: IfNotPresent
+    tag: "q808"
+
+  imagePullSecrets:
+    - name: docker-auth
+
+  readinessProbe:
+    enabled: "true"
+  livenessProbe:
+    enabled: "true"
+
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+  
+  extraVolumeMounts:
+    - mountPath: /mnt/extra
+      subPath: extra
+      name: qmig-shared
+    - mountPath: /mnt/dags
+      subPath: dags
+      name: qmig-shared
+    - mountPath: /mnt/airflow/logs
+      subPath: logs
+      name: qmig-shared
+    
+  extraVolumes: []
+
+  service:
+    annotations: {}
+    type: ClusterIP
+    port: 8080
+
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/enable-cors: "true"
+      nginx.ingress.kubernetes.io/use-regex: "true"
+    hosts:
+      # - host: "{{PROJECT_NAME}}api.qmigrator.ai"
+      - paths:
+        - path: /api
+          pathType: Prefix
+    # tls:
+    #   - secretName: qmig-eng
+    #     hosts:
+    #       - "{{PROJECT_NAME}}api.qmigrator.ai"
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 300Mi
+    limits:
+      cpu: 400m
+      memory: 600Mi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  env:
+    POSTGRES_PORT: "5432"
+    AIR_HOST: "http://qmig-air-webserver.qmig-ns.svc.cluster.local:8080"
+
+  envSecret:
+    - name: REDIS_PASS
+      secretRef: qmig-secret
+      secretKey: REDIS_PASS
+    - name: POSTGRES_PASSWORD
+      secretRef: qmig-secret
+      secretKey: POSTGRES_PASSWORD
+    - name: PROJECT_NAME
+      secretRef: qmig-secret
+      secretKey: PROJECT_NAME
+    - name: airflow-password
+      secretRef: qmig-air-keys
+      secretKey: airflow-password
+
+db:
+  name: "db"
+  replicaCount: 1
+  statefulSet:
+    enabled: false
+  image:
+    repository: postgres
+    pullPolicy: IfNotPresent
+    tag: "14.2"
+
+  imagePullSecrets: {}
+
+  dbshConfig:
+    stringOverride: ""
+
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+
+  initContainer:
+    loadDB:
+      image:
+        repository: qmigrator.azurecr.io/qmigdb-ini
+        tag: "1155"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 300Mi
+        limits:
+          cpu: 400m
+          memory: 600Mi
+
+  persistentVolume:
+    ## If false, use emptyDir
+    enabled: true
+
+    ## Must match those of existing PV or dynamic provisioner
+    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    accessModes:
+      - ReadWriteOnce
+
+    ## data Persistent Volume Claim annotations
+    annotations: {}
+
+    ## Requires app.persistentVolume.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    existingClaim: ""
+
+    ## Subdirectory of data Persistent Volume to mount
+    ## Useful if the volume's root directory is not empty
+    ##
+    # subPath: db
+
+    ## data Persistent Volume size
+    ##
+    size: 5Gi
+
+    ## data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    storageClass: "disk-csi"
+
+    ## data Persistent Volume Binding Mode
+    ## If defined, volumeBindingMode: <volumeBindingMode>
+    ## If undefined (the default) or set to null, no volumeBindingMode spec is
+    ##   set, choosing the default mode.
+    ##
+    # volumeBindingMode: ""
+
+  service:
+    annotations: {}
+    type: ClusterIP
+    port: 5432
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 600Mi
+    limits:
+      cpu: 400m
+      memory: 800Mi
+
+  env:
+    JDBC_PARAMS: "sslfactory=org.postgresql.ssl.NonValidatingFactory"
+    PGDATA: "/var/lib/postgresql/data/pgdata"
+    POSTGRES_USER: "postgres"
+
+  envSecret:
+    - name: POSTGRES_PASSWORD
+      secretRef: qmig-secret
+      secretKey: POSTGRES_PASSWORD
+  
+  extraVolumeMounts: []
+
+  extraVolumes: []
+
+msg:
+  name: "msg"
+  replicaCount: 1
+  statefulSet:
+    enabled: false
+  image:
+    repository: eqalpha/keydb
+    pullPolicy: IfNotPresent
+    tag: "x86_64_v6.3.4"
+
+  args: []
+
+  ## the full content of the `msg-keys.conf` file (as a string)
+  ## ____ EXAMPLE _______________
+  ##   stringOverride: |
+  ##     databases 16
+  ##     port 6379
+  ##
+  keyDBConfig:
+    stringOverride: ""
+    
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+
+  persistentVolume:
+    ## If false, use emptyDir
+    enabled: true
+
+    ## Must match those of existing PV or dynamic provisioner
+    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    accessModes:
+      - ReadWriteOnce
+
+    ## data Persistent Volume Claim annotations
+    annotations: {}
+
+    ## Requires app.persistentVolume.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    existingClaim: ""
+
+    ## Subdirectory of data Persistent Volume to mount
+    ## Useful if the volume's root directory is not empty
+    ##
+    # subPath: msg
+
+    ## data Persistent Volume size
+    ##
+    size: 5Gi
+
+    ## data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    storageClass: "disk-csi"
+
+    ## data Persistent Volume Binding Mode
+    ## If defined, volumeBindingMode: <volumeBindingMode>
+    ## If undefined (the default) or set to null, no volumeBindingMode spec is
+    ##   set, choosing the default mode.
+    ##
+    # volumeBindingMode: ""
+
+  service:
+    annotations: {}
+    type: ClusterIP
+    port: 6379
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 200Mi
+    limits:
+      cpu: 200m
+      memory: 300Mi
+
+  master:
+    enabled: "true"
+
+  auth:
+    existingSecret: "qmig-secret"
+    existingSecretKey: REDIS_PASS
+
+  envSecret:
+    - name: PROJECT_ID
+      secretRef: qmig-secret
+      secretKey: PROJECT_ID
+    
+  extraVolumeMounts: []
+  extraVolumes: []
+
+asses:
+  name: "asses"
+  image:
+    repository: qmigrator.azurecr.io/webassotp
+    pullPolicy: IfNotPresent
+    tag: "906"
+
+  imagePullSecrets:
+    - name: docker-auth
+
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+
+  schedule: "*/10 * * * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  startingDeadlineSeconds: 500
+  concurrencyPolicy: Forbid
+  restartPolicy: Never
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 3
+  suspend: true
+
+  resources:
+    requests:
+      cpu: 300m
+      memory: 600Mi
+    limits:
+      cpu: 600m
+      memory: 1200Mi
+
+  envSecret:
+    - name: PROJECT_ID
+      secretRef: qmig-secret
+      secretKey: PROJECT_ID
+
+  env:
+    API_HOST: "http://qmig-eng.qmig-ns.svc.cluster.local:8080"
+  
+  extraVolumeMounts: []
+  extraVolumes: []
+
+convs:
+  name: "convs"
+  image:
+    repository: qmigrator.azurecr.io/webconvotp
+    pullPolicy: IfNotPresent
+    tag: "871"
+
+  imagePullSecrets:
+    - name: docker-auth
+
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+
+  schedule: "*/10 * * * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  startingDeadlineSeconds: 500
+  concurrencyPolicy: Forbid
+  restartPolicy: Never
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 3
+  suspend: true
+
+  resources:
+    requests:
+      cpu: 300m
+      memory: 600Mi
+    limits:
+      cpu: 600m
+      memory: 1200Mi
+
+  envSecret:
+  - name: PROJECT_ID
+    secretRef: qmig-secret
+    secretKey: PROJECT_ID
+
+  env:
+    API_HOST: "http://qmig-eng.qmig-ns.svc.cluster.local:8080"
+  
+  extraVolumeMounts: []
+
+  extraVolumes: []
+
+migrt:
+  name: "migrt"
+  image:
+    repository: qmigrator.azurecr.io/webdmotp
+    pullPolicy: IfNotPresent
+    tag: "961"
+
+  imagePullSecrets:
+    - name: docker-auth
+
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+
+  schedule: "*/10 * * * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  startingDeadlineSeconds: 500
+  concurrencyPolicy: Forbid
+  restartPolicy: Never
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 3
+  suspend: true
+
+  resources:
+    requests:
+      cpu: 300m
+      memory: 600Mi
+    limits:
+      cpu: 600m
+      memory: 1200Mi
+
+  envSecret:
+    - name: PROJECT_ID
+      secretRef: qmig-secret
+      secretKey: PROJECT_ID
+
+  env:
+    API_HOST: "http://qmig-eng.qmig-ns.svc.cluster.local:8080"
+  
+  extraVolumeMounts: 
+    - mountPath: /mnt/extra
+      subPath: extra
+      name: qmig-shared
+    - mountPath: /mnt/dags
+      subPath: dags
+      name: qmig-shared
+
+  extraVolumes: []
+
+tests:
+  name: "tests"
+  image:
+    repository: qmigrator.azurecr.io/webtestotp
+    pullPolicy: IfNotPresent
+    tag: "971"
+
+  imagePullSecrets:
+    - name: docker-auth
+
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+
+  schedule: "*/10 * * * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  startingDeadlineSeconds: 500
+  concurrencyPolicy: Forbid
+  restartPolicy: Never
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 3
+  suspend: true
+
+  resources:
+    requests:
+      cpu: 300m
+      memory: 600Mi
+    limits:
+      cpu: 600m
+      memory: 1200Mi
+
+  envSecret:
+    - name: PROJECT_ID
+      secretRef: qmig-secret
+      secretKey: PROJECT_ID
+
+  env:
+    API_HOST: "http://qmig-eng.qmig-ns.svc.cluster.local:8080"
+  
+  extraVolumeMounts: 
+    - mountPath: /mnt/extra
+      subPath: extra
+      name: qmig-shared
+    - mountPath: /mnt/dags
+      subPath: dags
+      name: qmig-shared
+
+  extraVolumes: []
+
+perfs:
+  name: "perfs"
+  image:
+    repository: qmigrator.azurecr.io/webperfotp
+    pullPolicy: IfNotPresent
+    tag: "985"
+
+  imagePullSecrets:
+    - name: docker-auth
+
+  annotations: {}
+  podAnnotations: {}
+
+  securityContext: {}
+  containerSecurityContext: {}
+  tolerations: {}
+  affinity: {}
+  nodeSelector: {}
+
+  schedule: "*/10 * * * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  startingDeadlineSeconds: 500
+  concurrencyPolicy: Forbid
+  restartPolicy: Never
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 3
+  suspend: true
+
+  resources:
+    requests:
+      cpu: 300m
+      memory: 600Mi
+    limits:
+      cpu: 600m
+      memory: 1200Mi
+
+  envSecret:
+    - name: PROJECT_ID
+      secretRef: qmig-secret
+      secretKey: PROJECT_ID
+
+  env:
+    API_HOST: "http://qmig-eng.qmig-ns.svc.cluster.local:8080"
+  
+  extraVolumeMounts: 
+    - mountPath: /mnt/extra
+      subPath: extra
+      name: qmig-shared
+    - mountPath: /mnt/dags
+      subPath: dags
+      name: qmig-shared
+
+  extraVolumes: []

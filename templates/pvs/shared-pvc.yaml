@@ -1,0 +1,34 @@
+{{- if .Values.globals.persistentVolume.enabled -}}
+{{- if not .Values.globals.persistentVolume.existingClaim -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "qmig.pv.shared" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "qmig.labels" . | nindent 4 }}
+  {{- with .Values.globals.persistentVolume.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+{{ toYaml .Values.globals.persistentVolume.accessModes | indent 4 }}
+{{- if .Values.globals.persistentVolume.storageClass }}
+{{- if (eq "-" .Values.globals.persistentVolume.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.globals.persistentVolume.storageClass }}"
+{{- end }}
+{{- end }}
+{{- if .Values.globals.persistentVolume.volumeBindingMode }}
+  volumeBindingModeName: "{{ .Values.globals.persistentVolume.volumeBindingMode }}"
+{{- end }}
+{{- if not .Values.globals.persistentVolume.dynamicProvision }}
+  volumeName: {{ include "qmig.pv.shared" . }}
+{{- end }}
+  resources:
+    requests:
+      storage: "{{ .Values.globals.persistentVolume.size }}"
+{{- end -}}
+{{- end -}}

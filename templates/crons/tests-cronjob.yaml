@@ -1,0 +1,113 @@
+{{- $pvcTemp := printf "%s-%s" (include "qmig.tests.fullname" .) "empty" -}}
+{{- $pvc := include "qmig.pv.shared" . -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ template "qmig.tests.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "qmig.tests.labels" . | nindent 4 }}
+  {{- with .Values.tests.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  concurrencyPolicy: {{ .Values.tests.concurrencyPolicy }}
+  failedJobsHistoryLimit: {{ .Values.tests.failedJobsHistoryLimit }}
+  schedule: {{ .Values.tests.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.tests.successfulJobsHistoryLimit }}
+  startingDeadlineSeconds: {{ .Values.tests.startingDeadlineSeconds }}
+  suspend: {{ .Values.tests.suspend }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ .Values.tests.ttlSecondsAfterFinished }}
+      backoffLimit: {{ .Values.tests.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            {{- include "qmig.tests.labels" . | nindent 12 }}
+          {{- with .Values.tests.annotations }}
+          annotations:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+        spec:
+          {{- with .Values.tests.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tests.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+          {{- with .Values.tests.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tests.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tests.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: {{ .Values.tests.name }}
+              image: "{{ .Values.tests.image.repository }}:{{ .Values.tests.image.tag }}"
+              imagePullPolicy: {{ .Values.tests.image.pullPolicy }}
+              resources:
+                {{- toYaml .Values.tests.resources | nindent 16 }}
+              {{- with .Values.tests.containerSecurityContext }}
+              securityContext:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.namespace
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: metadata.name
+                {{- range $name, $value := .Values.tests.env }}
+                - name: {{ $name }}
+                  value: {{ $value | quote}}
+                {{- end }}
+                {{- range .Values.tests.envSecret }}
+                - name: {{ .name }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .secretRef }}
+                      key: {{ .secretKey }}
+                {{- end }}
+              volumeMounts:
+                - mountPath: /mnt/pypod
+                  {{- if and .Values.globals.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+                  subPath: {{ .Values.globals.persistentVolume.subPath }}
+                  {{- end }}
+                  name: {{ $pvc }}
+                - mountPath: /app/tmp
+                  name: {{ $pvcTemp }}
+                - mountPath: /tmp
+                  name: {{ $pvcTemp }}
+              {{- if .Values.tests.extraVolumeMounts }}
+                {{- toYaml .Values.tests.extraVolumeMounts | nindent 16 }}
+              {{- end }}
+          restartPolicy: {{ .Values.tests.restartPolicy }}
+          volumes:
+            - name: {{ $pvc }}
+              {{- if .Values.globals.persistentVolume.enabled }}
+              persistentVolumeClaim:
+                claimName: {{ if .Values.globals.persistentVolume.existingClaim }}{{ .Values.globals.persistentVolume.existingClaim }}{{- else }}{{ template "qmig.tests.fullname" . }}{{- end }}
+              {{- else }}
+              emptyDir: {}
+              {{- end }}
+            - name: {{ $pvcTemp }}
+              emptyDir: {}
+          {{- if .Values.tests.extraVolumes }}
+            {{- toYaml .Values.tests.extraVolumes | nindent 12 }}
+          {{- end }}
