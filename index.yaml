@@ -10,6 +10,6 @@ entries:
     name: qmig
     type: application
     urls:
-    - https://https:/quadnaren.github.io/Qmig/qmig-0.1.0.tgz
+    - https:/quadnaren.github.io/Qmig/qmig-0.1.0.tgz
     version: 0.1.0
 generated: "2024-05-22T20:56:25.1183566+05:30"
