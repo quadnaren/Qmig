@@ -6,7 +6,7 @@ entries:
     created: "2024-05-26T17:42:08.9494102+05:30"
     description: A Helm chart for Qmigrator Application to be deployed in Kubernetes
     digest: 5a65c1701f19b115323e4f9ebd8798920c56f9169ebb311f08b85a1f1a0d8672
-    home: https://github.com/quadnaren/Qmig
+    home: https://quadnaren.github.io/Qmig
     icon: https://qmigrator.ai/assets/logo-8487ae7c.png
     maintainers:
     - name: narendra
@@ -15,7 +15,7 @@ entries:
     - https://github.com/quadnaren/Qmig
     type: application
     urls:
-    - https://github.com/quadnaren/Qmig/qmig-0.1.1.tgz
+    - https://quadnaren.github.io/Qmig/qmig-0.1.0.tgz
     version: 0.1.1
   - apiVersion: v2
     appVersion: 1.0.0
