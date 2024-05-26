@@ -3,7 +3,23 @@ entries:
   qmig:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2024-05-22T20:56:25.1242299+05:30"
+    created: "2024-05-26T17:42:08.9494102+05:30"
+    description: A Helm chart for Qmigrator Application to be deployed in Kubernetes
+    digest: 5a65c1701f19b115323e4f9ebd8798920c56f9169ebb311f08b85a1f1a0d8672
+    home: https://github.com/quadnaren/Qmig
+    icon: https://qmigrator.ai/assets/logo-8487ae7c.png
+    maintainers:
+    - name: narendra
+    name: qmig
+    sources:
+    - https://github.com/quadnaren/Qmig
+    type: application
+    urls:
+    - https://github.com/quadnaren/Qmig/qmig-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2024-05-26T17:39:25.144371+05:30"
     description: A Helm chart for Qmigrator Application to be deployed in Kubernetes
     digest: 7e77809067437d5403104b037539983fa072394ef96a4b5149fe50286c40ab2a
     icon: https://qmigrator.ai/assets/images/MicrosoftTeams-image%20(1).png
@@ -12,4 +28,4 @@ entries:
     urls:
     - https://quadnaren.github.io/Qmig/qmig-0.1.0.tgz
     version: 0.1.0
-generated: "2024-05-22T20:56:25.1183566+05:30"
+generated: "2024-05-26T17:42:08.9451798+05:30"
