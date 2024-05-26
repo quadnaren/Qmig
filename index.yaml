@@ -15,7 +15,7 @@ entries:
     - https://github.com/quadnaren/Qmig
     type: application
     urls:
-    - https://quadnaren.github.io/Qmig/qmig-0.1.0.tgz
+    - https://quadnaren.github.io/Qmig/qmig-0.1.1.tgz
     version: 0.1.1
   - apiVersion: v2
     appVersion: 1.0.0
