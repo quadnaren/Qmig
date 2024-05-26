@@ -279,10 +279,7 @@ spec:
         app.kubernetes.io/component: controller
     spec:
       dnsPolicy: ClusterFirst
-      {{- with .Values.ingressController.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.ingressController.imagePullSecrets) | indent 6 }}
       containers:
         - name: controller
           image: "{{ .Values.ingressController.controllerImage.repository }}:{{ .Values.ingressController.controllerImage.tag }}"
@@ -384,6 +381,8 @@ metadata:
   labels:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/component: controller
+  annotations:
+    "ingressclass.kubernetes.io/is-default-class": "true"
   name: nginx
 spec:
   controller: k8s.io/ingress-nginx
@@ -539,10 +538,7 @@ spec:
         app.kubernetes.io/name: ingress-nginx
         app.kubernetes.io/component: admission-webhook
     spec:
-      {{- with .Values.ingressController.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.ingressController.imagePullSecrets) | indent 6 }}
       containers:
         - name: create
           image: "{{ .Values.ingressController.webhookImage.repository }}:{{ .Values.ingressController.webhookImage.tag }}"
@@ -599,10 +595,7 @@ spec:
         app.kubernetes.io/name: ingress-nginx
         app.kubernetes.io/component: admission-webhook
     spec:
-      {{- with .Values.ingressController.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.ingressController.imagePullSecrets) | indent 6 }}
       containers:
         - name: create
           image: "{{ .Values.ingressController.webhookImage.repository }}:{{ .Values.ingressController.webhookImage.tag }}"

@@ -17,7 +17,7 @@ spec:
   schedule: {{ .Values.perfs.schedule | quote }}
   successfulJobsHistoryLimit: {{ .Values.perfs.successfulJobsHistoryLimit }}
   startingDeadlineSeconds: {{ .Values.perfs.startingDeadlineSeconds }}
-  suspend: {{ .Values.perfs.suspend }}
+  suspend: true
   jobTemplate:
     spec:
       ttlSecondsAfterFinished: {{ .Values.perfs.ttlSecondsAfterFinished }}
@@ -31,10 +31,7 @@ spec:
             {{ toYaml . | nindent 12 }}
           {{- end }}
         spec:
-          {{- with .Values.perfs.imagePullSecrets }}
-          imagePullSecrets:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+          {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.perfs.imagePullSecrets) | indent 10 -}}
           {{- with .Values.perfs.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
@@ -73,6 +70,7 @@ spec:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: metadata.name
+                {{- include "qmig.project.env" . | nindent 16 }}
                 {{- range $name, $value := .Values.perfs.env }}
                 - name: {{ $name }}
                   value: {{ $value | quote}}
@@ -85,29 +83,13 @@ spec:
                       key: {{ .secretKey }}
                 {{- end }}
               volumeMounts:
-                - mountPath: /mnt/pypod
-                  {{- if and .Values.globals.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
-                  subPath: {{ .Values.globals.persistentVolume.subPath }}
-                  {{- end }}
-                  name: {{ $pvc }}
-                - mountPath: /app/tmp
-                  name: {{ $pvcTemp }}
-                - mountPath: /tmp
-                  name: {{ $pvcTemp }}
+                {{- include "qmig.perfs.volumeMounts" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 16 }}
               {{- if .Values.perfs.extraVolumeMounts }}
                 {{- toYaml .Values.perfs.extraVolumeMounts | nindent 16 }}
               {{- end }}
           restartPolicy: {{ .Values.perfs.restartPolicy }}
           volumes:
-            - name: {{ $pvc }}
-              {{- if .Values.globals.persistentVolume.enabled }}
-              persistentVolumeClaim:
-                claimName: {{ if .Values.globals.persistentVolume.existingClaim }}{{ .Values.globals.persistentVolume.existingClaim }}{{- else }}{{ template "qmig.perfs.fullname" . }}{{- end }}
-              {{- else }}
-              emptyDir: {}
-              {{- end }}
-            - name: {{ $pvcTemp }}
-              emptyDir: {}
+          {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 10 }}
           {{- if .Values.perfs.extraVolumes }}
             {{- toYaml .Values.perfs.extraVolumes | nindent 12 }}
           {{- end }}

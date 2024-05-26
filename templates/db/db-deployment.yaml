@@ -88,15 +88,7 @@ spec:
             {{- end }}
             {{- end }}
           volumeMounts:
-            - mountPath: /docker-entrypoint-initdb.d
-              name: sqlconfig-sh
-            - mountPath: /var/lib/postgresql/data
-              {{- if and .Values.db.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
-              subPath: {{ .Values.db.persistentVolume.subPath }}
-              {{- end }}
-              name: {{ $pvc }}
-            - mountPath: /var/run/postgresql
-              name: {{ $pvcTemp }}
+          {{- include "qmig.db.volumeMounts" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
           {{- if .Values.db.extraVolumeMounts }}
             {{- toYaml .Values.db.extraVolumeMounts | nindent 12 }}
           {{- end }}

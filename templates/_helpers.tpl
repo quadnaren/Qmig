@@ -12,7 +12,6 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
-
 {{/*
 Selector labels
 */}}
@@ -30,23 +29,6 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
-
-{{/*Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-*/}}
-{{- define "qmig.fullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
 
 {{/*
 Return the appropriate apiVersion for deployment.
@@ -85,6 +67,13 @@ Cloud specification
 */}}
 {{- define "qmig.cloud" -}}
 {{- printf "%s" .Values.cloud | default "azure" -}}
+{{- end -}}
+
+{{/*
+Secret specification
+*/}}
+{{- define "qmig.secret" -}}
+{{- printf "%s" .Values.secret.secretName | default "qmig-secret" -}}
 {{- end -}}
 
 {{/*
@@ -141,15 +130,41 @@ component: {{ .Values.eng.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.eng.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "qmig.eng.env" -}}
+{{- define "qmig.eng.env" }}
+- name: REDIS_PASS
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.secret" . }}
+      key: REDIS_PASS
+- name: PROJECT_NAME
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.secret" . }}
+      key: PROJECT_NAME
 - name: POSTGRES_HOST
   value: {{- printf " " -}}{{- include "qmig.db.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.cluster.local
 - name: REDIS_HOST
   value: {{- printf " " -}}{{- include "qmig.msg.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.cluster.local
-- name: POSTGRES_DB
-  value:  {{- printf " prjdb%s" .Values.globals.projectId -}}
-{{- end -}}
+{{- end }}
 
+{{- define "qmig.eng.volumeMounts" }}
+- mountPath: /mnt/eng
+  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  subPath: {{ .Values.shared.persistentVolume.subPath | quote }}
+  {{- end }}
+  name: {{ .pvcname }}
+- mountPath: /mnt/extra
+  subPath: {{ .Values.shared.folderPath.extraSubpath | quote}}
+  name: {{ .pvcname }}
+- mountPath: /mnt/dags
+  subPath: {{  .Values.shared.folderPath.dagsSubpath | quote }}
+  name: {{ .pvcname }}
+- mountPath: /mnt/airflow/logs
+  subPath: {{ .Values.shared.folderPath.logsSubpath | quote }}
+  name: {{ .pvcname }}
+- mountPath: /tmp
+  name: {{ .pvctemp }}
+{{- end }}
 
 {{/*
 All specification for db module
@@ -169,9 +184,32 @@ component: {{ .Values.db.name | quote }}
 {{- end -}}
 
 {{- define "qmig.db.env" -}}
+- name: POSTGRES_PORT
+  value: {{- printf " %s" (default "5432" .Values.db.env.POSTGRES_PORT | toString | quote) }}
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.secret" . }}
+      key: POSTGRES_PASSWORD
 - name: POSTGRES_DB
-  value:  {{- printf " prjdb%s" .Values.globals.projectId -}}
+  value: {{- printf " prjdb%s" (.Values.secret.data.PROJECT_ID | toString) -}}
 {{- end -}}
+
+
+{{- define "qmig.db.volumeMounts" }}
+- mountPath: /docker-entrypoint-initdb.d
+  name: sqlconfig-sh
+- mountPath: /var/lib/postgresql/data
+  {{- if and .Values.db.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  subPath: {{ .Values.db.persistentVolume.subPath | quote }}
+  {{- end }}
+  name: {{ .pvcname }}
+- mountPath: /var/run/postgresql
+  name: {{ .pvctemp }}
+- mountPath: /sqlconfig
+  subPath: sqlfile
+  name: {{ .pvctemp }}
+{{- end }}
 
 
 {{/*
@@ -208,6 +246,25 @@ component: {{ .Values.msg.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.msg.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.msg.env" -}}
+{{- if .Values.msg.auth.enabled }}
+- name: REDIS_PASS
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.secret" . }}
+      key: REDIS_PASS
+{{- end }}
+{{- end -}}
+
+{{- define "qmig.project.env" -}}
+- name: PROJECT_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.secret" . }}
+      key: PROJECT_ID
+- name: API_HOST
+  value: {{- printf " http://" -}}{{- include "qmig.eng.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.cluster.local:8080
+{{- end -}}
 
 
 {{/*
@@ -227,6 +284,20 @@ component: {{ .Values.asses.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.asses.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.asses.volumeMounts" }}
+- mountPath: /mnt/pypod
+  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  subPath: {{ .Values.shared.persistentVolume.subPath }}
+  {{- end }}
+  name: {{ .pvcname }}
+- mountPath: /app/tmp
+  subPath: "tmp-e"
+  name: {{ .pvctemp }}
+- mountPath: /tmp
+  subPath: "tmp"
+  name: {{ .pvctemp }}
+{{- end }}
+
 
 {{/*
 All specification for convs module
@@ -245,6 +316,19 @@ component: {{ .Values.convs.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.convs.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.convs.volumeMounts" }}
+- mountPath: /mnt/pypod
+  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  subPath: {{ .Values.shared.persistentVolume.subPath }}
+  {{- end }}
+  name: {{ .pvcname }}
+- mountPath: /app/tmp
+  subPath: "tmp-e"
+  name: {{ .pvctemp }}
+- mountPath: /tmp
+  subPath: "tmp"
+  name: {{ .pvctemp }}
+{{- end }}
 
 {{/*
 All specification for migrt module
@@ -263,6 +347,25 @@ component: {{ .Values.migrt.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.migrt.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.migrt.volumeMounts" }}
+- mountPath: /mnt/pypod
+  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  subPath: {{ .Values.shared.persistentVolume.subPath }}
+  {{- end }}
+  name: {{ .pvcname }}
+- mountPath: /mnt/extra
+  subPath: {{ .Values.shared.folderPath.extraSubpath | quote}}
+  name: {{ .pvcname }}
+- mountPath: /mnt/dags
+  subPath: {{  .Values.shared.folderPath.dagsSubpath | quote }}
+  name: {{ .pvcname }}
+- mountPath: /app/tmp
+  subPath: "tmp-e"
+  name: {{ .pvctemp }}
+- mountPath: /tmp
+  subPath: "tmp"
+  name: {{ .pvctemp }}
+{{- end }}
 
 {{/*
 All specification for tests module
@@ -280,6 +383,21 @@ component: {{ .Values.tests.name | quote }}
 {{- define "qmig.tests.fullname" -}}
 {{- printf "%s-%s" .Release.Name .Values.tests.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "qmig.tests.volumeMounts" }}
+- mountPath: /mnt/pypod
+  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  subPath: {{ .Values.shared.persistentVolume.subPath }}
+  {{- end }}
+  name: {{ .pvcname }}
+- mountPath: /app/tmp
+  subPath: "tmp-e"
+  name: {{ .pvctemp }}
+- mountPath: /tmp
+  subPath: "tmp"
+  name: {{ .pvctemp }}
+{{- end }}
+
 
 
 {{/*
@@ -299,7 +417,19 @@ component: {{ .Values.perfs.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.perfs.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-
+{{- define "qmig.perfs.volumeMounts" }}
+- mountPath: /mnt/pypod
+  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  subPath: {{ .Values.shared.persistentVolume.subPath }}
+  {{- end }}
+  name: {{ .pvcname }}
+- mountPath: /app/tmp
+  subPath: "tmp-e"
+  name: {{ .pvctemp }}
+- mountPath: /tmp
+  subPath: "tmp"
+  name: {{ .pvctemp }}
+{{- end }}
 
 {{/*
 All specification for CSI
@@ -340,3 +470,46 @@ All specification for PVC
 {{- end -}}
 
 
+{{/*
+All specification for PVC
+*/}}
+{{- define "qmig.shared.volume" }}
+- name: {{ .pvcname }}
+  {{- if .Values.shared.persistentVolume.enabled }}
+  persistentVolumeClaim:
+    claimName: {{ if .Values.shared.persistentVolume.existingClaim }}{{ .Values.shared.persistentVolume.existingClaim }}{{ else }}{{ .pvcname }}{{ end }}
+  {{- else }}
+  emptyDir: {}
+  {{- end }}
+- name: {{ .pvctemp }}
+  emptyDir: {}
+{{- end }}
+
+{{/*
+Docker specification
+*/}}
+{{- define "qmig.dockerauth" -}}
+{{- printf "%s" .Values.imageCredentials.secretName | default "qmig-docker" -}}
+{{- end -}}
+
+{{- define "qmig.dockerSecret" }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" (default "qmigrator.azurecr.io" .Values.imageCredentials.data.registry) .Values.imageCredentials.data.username .Values.imageCredentials.data.password (printf "%s:%s" .Values.imageCredentials.data.username .Values.imageCredentials.data.password | b64enc) | b64enc }}
+{{- end }}
+
+{{- define "qmig.dockerauthList" -}}
+  {{- $pullSecrets := list }}
+  {{- $pullSecrets = append $pullSecrets (include "qmig.dockerauth" .) -}}
+  {{- range .imagePullSecrets -}}
+    {{- if kindIs "map" . -}}
+      {{- $pullSecrets = append $pullSecrets .name -}}
+    {{- else -}}
+      {{- $pullSecrets = append $pullSecrets . -}}
+    {{- end }}
+  {{- end -}}
+  {{- if (not (empty $pullSecrets)) }}
+imagePullSecrets:
+    {{- range $pullSecrets | uniq }}
+  - name: {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end -}}

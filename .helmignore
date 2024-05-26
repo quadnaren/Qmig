@@ -21,4 +21,6 @@
 .idea/
 *.tmproj
 .vscode/
-ignore/*
+*.md
+robots.txt
+*.tgz
