@@ -57,10 +57,10 @@ spec:
           resources:
             {{- toYaml .Values.msg.resources | nindent 12 }}
           args:
-          {{- if .Values.msg.auth }}
             - "/etc/keydb/keydb.conf"
+          {{- if .Values.msg.auth.enabled }}
             - "--requirepass"
-            - "$({{ .Values.msg.auth.existingSecretKey }})"
+            - "$REDIS_PASS"
           {{- end }}
           {{- with .Values.msg.args }}
           {{- range . }}
@@ -82,16 +82,11 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.name
+            {{- include "qmig.project.env" . | nindent 12 }}
+            {{- include "qmig.msg.env" . | nindent 12 }}
             {{- if .Values.msg.master.enabled }}
             - name: MASTER
               value: "true"
-            {{- end }}
-            {{- if .Values.msg.auth }}
-            - name: {{ .Values.msg.auth.existingSecretKey }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.msg.auth.existingSecret }}
-                  key: {{ .Values.msg.auth.existingSecretKey }}
             {{- end }}
             {{- range $name, $value := .Values.msg.env }}
             - name: {{ $name }}

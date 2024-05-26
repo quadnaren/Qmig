@@ -25,10 +25,7 @@ spec:
       labels:
         {{- include "qmig.app.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.app.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.app.imagePullSecrets) | indent 6 -}}
       {{- with .Values.app.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}

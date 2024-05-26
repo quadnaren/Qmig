@@ -27,10 +27,7 @@ spec:
       labels:
         {{- include "qmig.eng.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.eng.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.eng.imagePullSecrets) | indent 6 -}}   
       {{- with .Values.eng.securityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -73,6 +70,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.name
+            {{- include "qmig.project.env" . | nindent 12 }}
+            {{- include "qmig.db.env" . | nindent 12 }}
             {{- include "qmig.eng.env" . | nindent 12 }}
             {{- range $name, $value := .Values.eng.env }}
             - name: {{ $name }}
@@ -108,26 +107,12 @@ spec:
             failureThreshold: {{ .Values.eng.readinessProbe.failureThreshold | default 3}}
           {{- end }}
           volumeMounts:
-            - mountPath: /mnt/eng
-              {{- if and .Values.globals.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
-              subPath: {{ .Values.globals.persistentVolume.subPath }}
-              {{- end }}
-              name: {{ $pvc }}
-            - mountPath: /tmp
-              name: {{ $pvcTemp }}
+          {{- include "qmig.eng.volumeMounts" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
           {{- if .Values.eng.extraVolumeMounts }}
             {{- toYaml .Values.eng.extraVolumeMounts | nindent 12 }}
           {{- end }}
       volumes:
-        - name: {{ $pvc }}
-          {{- if .Values.globals.persistentVolume.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ if .Values.globals.persistentVolume.existingClaim }}{{ .Values.globals.persistentVolume.existingClaim }}{{- else }}{{ template "qmig.eng.fullname" . }}{{- end }}
-          {{- else }}
-          emptyDir: {}
-          {{- end }}
-        - name: {{ $pvcTemp }}
-          emptyDir: {}
+      {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 10 }}
       {{- if .Values.eng.extraVolumes }}
         {{- toYaml .Values.eng.extraVolumes | nindent 8 }}
       {{- end }}
