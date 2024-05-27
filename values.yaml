@@ -2,40 +2,46 @@
 ## This is a YAML-formatted file.
 ## Declare variables to be passed into your templates.
 
-## @param nameOverride String to partially override name template (will maintain the release name)
+## @param nameOverride String to partially override name template (will maintain the release name) Default: ""
 nameOverride: ""
 
 ## Required global project information to be created in secret
 secret:
-  ## @param secret.secretName Name for project secret
+  ## @param secret.secretName Name for project secret Default: "" (name: qmig-secret)
   secretName: ""
   data:
-    ## @param secret.data.PROJECT_ID ID of project
+    ## @param secret.data.PROJECT_ID ID of project Default: null
     PROJECT_ID: null
-    ## @param secret.data.PROJECT_NAME Name of project
+    ## @param secret.data.PROJECT_NAME Name of project Default: null
     PROJECT_NAME: null
-    ## @param secret.data.POSTGRES_PASSWORD Admin Password for metadata DB
+    ## @param secret.data.POSTGRES_PASSWORD Admin Password for metadata DB Default: null
     POSTGRES_PASSWORD: null
-    ## @param secret.data.REDIS_PASS Admin Password for Cache
+    ## @param secret.data.REDIS_PASS Admin Password for Cache Default: null
     REDIS_PASS: null
 
 ## Required docker registry information to pull images from
 imageCredentials:
-  ## @param imageCredentials.secretName Name for docker secret
-  secretName: ""
+  ## @param imageCredentials.secretName Name for docker secret Default: "" (name: qmig-docker)
+  secretName: "" 
   data:
     ## @param imageCredentials.data.registry Server/Registry host. Default: qmigrator.azurecr.io
     registry: null
-    ## @param imageCredentials.data.username Username for given docker host
+    ## @param imageCredentials.data.username Username for given docker host Default: null
     username: null
-    ## @param imageCredentials.data.password Password for given docker host
+    ## @param imageCredentials.data.password Password for given docker host Default: null
     password: null
 
 ## QMigrator shares PersistentVolume & information about the volume folders used by Airflow too
-## @param shared.persistentVolume PersistentVolume template for Shared volume in QMigrator
+## @param shared.persistentVolume.enabled If false, use emptyDir Default: true
+## @param shared.persistentVolume.accessModes How should the volume accessible in App Default: ReadWriteMany
+## @param shared.persistentVolume.annotations Persistent Volume Claim annotations Default: {}
+## @param shared.persistentVolume.existingClaim Name of PVC created manually before volume Default: ""
+## @param shared.persistentVolume.subPath Subdirectory of data Persistent Volume to mount Default: ""
+## @param shared.persistentVolume.size Persistent Volume size Default: 5Gi
+## @param shared.persistentVolume.storageClass Persistent Volume Storage Class Default: "" (Default from Kubernetes)
+## @param shared.persistentVolume.volumeBindingMode Persistent Volume Binding Mode Default: "" (Default from Kubernetes)
 shared:
   persistentVolume:
-    ## If false, use emptyDir
     enabled: true
 
     ## Must match those of existing PV or dynamic provisioner
@@ -73,9 +79,9 @@ shared:
 
   ## Folder used on Airflow must be given to QMigrator for sharing files
   ## Subpath if defined in Airflow | Default is "" (Empty) the root of volume will be used
-  ## @param shared.folderPath.extraSubpath subpath for Extra folder in a shared volume
-  ## @param shared.folderPath.dagsSubpath subpath for Dag's folder of airflow in a shared volume
-  ## @param shared.folderPath.logsSubpath subpath for logs folder of airflow in a shared volume
+  ## @param shared.folderPath.extraSubpath subpath for Extra folder in a shared volume Default: "extra"
+  ## @param shared.folderPath.dagsSubpath subpath for Dag's folder of airflow in a shared volume Default: "dags"
+  ## @param shared.folderPath.logsSubpath subpath for logs folder of airflow in a shared volume Default: "logs"
   folderPath:
     extraSubpath: "extra"
     dagsSubpath: "dags"
@@ -85,19 +91,19 @@ shared:
 ## Enable to quickly install controller within the helm
 ## https://kubernetes.github.io/ingress-nginx/deploy/
 ingressController:
-  ## @param ingressController.enabled Whether or not to install the ingressController
+  ## @param ingressController.enabled Whether or not to install the ingressController Default: true
   enabled: true
-  ## @param ingressController.controllerImage.repository Ingress controller image repository
-  ## @param ingressController.controllerImage.tag Ingress controller image tag/version
+  ## @param ingressController.controllerImage.repository Ingress controller image repository Default: qmigrator.azurecr.io/ingress-nginx/controller
+  ## @param ingressController.controllerImage.tag Ingress controller image tag/version Default: "v1.9.4"
   controllerImage:
     repository: qmigrator.azurecr.io/ingress-nginx/controller
     tag: "v1.9.4"
-  ## @param ingressController.webhookImage.repository Ingress controller image repository
-  ## @param ingressController.webhookImage.tag Ingress controller image tag/version
+  ## @param ingressController.webhookImage.repository Ingress controller image repository Default: qmigrator.azurecr.io/ingress-nginx/kube-webhook-certgen
+  ## @param ingressController.webhookImage.tag Ingress controller image tag/version Default: "v20231011-8b53cabe0"
   webhookImage:
     repository: qmigrator.azurecr.io/ingress-nginx/kube-webhook-certgen
     tag: "v20231011-8b53cabe0"
-  ## Optionally specify an array of imagePullSecrets.
+  ## @param ingressController.imagePullSecrets Ingress Controller component pull secrets Default: {}
   ## Secrets must be manually created in the namespace.
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: {}
@@ -105,30 +111,30 @@ ingressController:
 ## Service account for QMigrator pods to use.
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:
-  ## @param serviceAccount.create Enable creation of ServiceAccount
+  ## @param serviceAccount.create Enable creation of ServiceAccount Default: true
   create: true
-  ## @param serviceAccount.name The name of the ServiceAccount to use.
+  ## @param serviceAccount.name The name of the ServiceAccount to use Default: "" (name: qmig-opr)
   ## If not set and create is true, a name is generated default
   name: ""
-  ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount
+  ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount Default: {}
   annotations: {}
 
 ## Enable RBAC (default on most clusters these days)
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
-## @param rbac.create Create Role and RoleBinding
+## @param rbac.create Create Role and RoleBinding Default: true
 rbac:
   ## - if `false`, you must create a custom Role and RoleBinding for the ServiceAccount defined in `serviceAccount.name`
   create: true
 
 ## App component
-## @param app.name Name for App component
-## @param app.replicaCount Number of App Components replicas
-## @param app.statefulSet.enabled Deploy App as statefulset
-## @param app.image.repository App component image repository
-## @param app.image.tag App component image tag/version
-## @param app.image.pullPolicy App component pull policy
-## @param app.imagePullSecrets App component pull secrets
+## @param app.name Name for App component Default: "app"
+## @param app.replicaCount Number of App Components replicas Default: 1
+## @param app.statefulSet.enabled Deploy App as statefulset Default: false
+## @param app.image.repository App component image repository Default: "qmigrator.azurecr.io/qubeapp"
+## @param app.image.tag App component image tag/version Default: "q1002"
+## @param app.image.pullPolicy App component pull policy Default: "IfNotPresent"
+## @param app.imagePullSecrets App component pull secrets Default: {}
 app:
   name: "app"
   replicaCount: 1
@@ -143,59 +149,59 @@ app:
    
   ## Configure extra options for App component containers' liveness and readiness
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
-  ## @param app.readinessProbe.enabled Enable readinessProbe on App Component containers
+  ## @param app.readinessProbe.enabled Enable readinessProbe on App Component containers Default: true
   readinessProbe:
     enabled: "true"
 
   ## Configure extra options for App component containers' liveness and readiness
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
-  ## @param app.livenessProbe.enabled Enable livenessProbe on App Component containers
+  ## @param app.livenessProbe.enabled Enable livenessProbe on App Component containers Default: true
   livenessProbe:
     enabled: "true"
 
-  ## @param app.annotations Add extra annotations to the App Component
+  ## @param app.annotations Add extra annotations to the App Component Default: {}
   annotations: {}
-  ## @param app.podAnnotations Add extra Pod annotations to the App Component pods
+  ## @param app.podAnnotations Add extra Pod annotations to the App Component pods Default: {}
   podAnnotations: {}
-  ## @param app.securityContext Configure App Component Security Context
+  ## @param app.securityContext Configure App Component Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param app.containerSecurityContext Configure App Component Container Security Context
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  ## @param app.containerSecurityContext Configure App Component Container Security Context Default: {}
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ 
   containerSecurityContext: {}
-  ## @param app.tolerations Tolerations for App Component pods assignment
+  ## @param app.tolerations Tolerations for App Component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param app.affinity Affinity for App Component pods assignment (evaluated as a template)
+  ## @param app.affinity Affinity for App Component pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param app.nodeSelector Node labels for App Component pods assignment
+  ## @param app.nodeSelector Node labels for App Component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
   ## App Component service parameters
   service:
-    ## @param app.service.annotations Additional custom annotations for App Component service
+    ## @param app.service.annotations Additional custom annotations for App Component service Default: {}
     annotations: {}
-    ## @param app.service.type App Component service type
+    ## @param app.service.type App Component service type Default: ClusterIP
     type: ClusterIP
-    ## @param app.service.port App Component service HTTP port
+    ## @param app.service.port App Component service HTTP port Default: 4200
     port: 4200
 
   ## App Component ingress parameters
   ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
   ingress:
-    ## @param app.ingress.enabled Enable ingress record generation
+    ## @param app.ingress.enabled Enable ingress record generation Default: true
     enabled: true
-    ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+)
+    ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
     ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
     ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
     className: ""
-    ## @param app.ingress.annotations Additional annotations for the Ingress resource
+    ## @param app.ingress.annotations Additional annotations for the Ingress resource Default: {}
     annotations: {}
-    ## @param app.ingress.host Default host for the ingress record
+    ## @param app.ingress.host Default host for the ingress record Default: ""
     host: ""
-    ## @param app.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record
+    ## @param app.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
     ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
     ## e.g:
     ## tls:
@@ -214,11 +220,11 @@ app:
 
   ## Enable HorizontalPodAutoscaler for App Component pods
   ## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
-  ## @param app.autoscaling.enabled Whether to enable horizontal pod autoscaler
-  ## @param app.autoscaling.minReplicas Configure a minimum amount of pods
-  ## @param app.autoscaling.maxReplicas Configure a maximum amount of pods
-  ## @param app.autoscaling.targetCPUUtilizationPercentage Define the CPU target to trigger the scaling actions (utilization percentage)
-  ## @param app.autoscaling.targetMemoryUtilizationPercentage Define the memory target to trigger the scaling actions (utilization percentage)
+  ## @param app.autoscaling.enabled Whether to enable horizontal pod autoscaler Default: true
+  ## @param app.autoscaling.minReplicas Configure a minimum amount of pods Default: 1
+  ## @param app.autoscaling.maxReplicas Configure a maximum amount of pods Default: 2
+  ## @param app.autoscaling.targetCPUUtilizationPercentage Define the CPU target to trigger the scaling actions (utilization percentage) Default: 80
+  ## @param app.autoscaling.targetMemoryUtilizationPercentage Define the memory target to trigger the scaling actions (utilization percentage) Default: 80
   autoscaling:
     enabled: true
     minReplicas: 1
@@ -227,13 +233,13 @@ app:
     targetMemoryUtilizationPercentage: 80
 
 ## Engine component
-## @param eng.name Name for Engine component
-## @param eng.replicaCount Number of Engine component replicas
-## @param eng.statefulSet.enabled Deploy App as statefulset
-## @param eng.image.repository Engine component image repository
-## @param eng.image.tag Engine component image tag/version
-## @param eng.image.pullPolicy Engine component pull policy
-## @param eng.imagePullSecrets Engine component pull secrets
+## @param eng.name Name for Engine component Default: "eng"
+## @param eng.replicaCount Number of Engine component replicas Default: 1
+## @param eng.statefulSet.enabled Deploy App as statefulset Default: false
+## @param eng.image.repository Engine component image repository Default: "qmigrator.azurecr.io/qubeeng"
+## @param eng.image.tag Engine component image tag/version Default: "q836"
+## @param eng.image.pullPolicy Engine component pull policy Default: "IfNotPresent"
+## @param eng.imagePullSecrets Engine component pull secrets Default: {}
 eng:
   name: "eng"
   replicaCount: 1
@@ -248,64 +254,64 @@ eng:
 
   ## Configure extra options for Engine component containers' liveness and readiness
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
-  ## @param eng.readinessProbe.enabled Enable readinessProbe on Engine component containers
+  ## @param eng.readinessProbe.enabled Enable readinessProbe on Engine component containers Default: true
   readinessProbe:
     enabled: "true"
 
   ## Configure extra options for Engine component containers' liveness and readiness
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
-  ## @param eng.livenessProbe.enabled Enable livenessProbe on Engine component containers
+  ## @param eng.livenessProbe.enabled Enable livenessProbe on Engine component containers Default: true
   livenessProbe:
     enabled: "true"
 
-  ## @param eng.annotations Add extra annotations to the Engine component
+  ## @param eng.annotations Add extra annotations to the Engine component Default: {}
   annotations: {}
-  ## @param eng.podAnnotations Add extra Pod annotations to the Engine component pods
+  ## @param eng.podAnnotations Add extra Pod annotations to the Engine component pods Default: {}
   podAnnotations: {}
-  ## @param eng.securityContext Configure Engine component Security Context
+  ## @param eng.securityContext Configure Engine component Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param eng.containerSecurityContext Configure Engine component Container Security Context
+  ## @param eng.containerSecurityContext Configure Engine component Container Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   containerSecurityContext: {}
-  ## @param eng.tolerations Tolerations for Engine component pods assignment
+  ## @param eng.tolerations Tolerations for Engine component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param eng.affinity Affinity for Engine component pods assignment (evaluated as a template)
+  ## @param eng.affinity Affinity for Engine component pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param eng.nodeSelector Node labels for Engine component pods assignment
+  ## @param eng.nodeSelector Node labels for Engine component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
   ## Engine component service parameters
   service:
-    ## @param eng.service.annotations Additional custom annotations for Engine component service
-    annotations: {}
-    ## @param eng.service.type Engine component service type
+    ## @param eng.service.annotations Additional custom annotations for Engine component service Default: {}
+    annotations: {} 
+    ## @param eng.service.type Engine component service type Default: ClusterIP
     type: ClusterIP
-    ## @param eng.service.port Engine component service HTTP port
+    ## @param eng.service.port Engine component service HTTP port Default: 8080
     port: 8080
  
-  ## @param eng.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Engine component pods
+  ## @param eng.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Engine component pods Default: []
   extraVolumeMounts: []
-  ## @param extraVolumes Optionally specify an extra list of additional volumes for all the Engine component pods
+  ## @param extraVolumes Optionally specify an extra list of additional volumes for all the Engine component pods Default: []
   extraVolumes: []
 
   ## Engine component ingress parameters
   ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
   ingress:
-    ## @param eng.ingress.enabled Enable ingress record generation
+    ## @param eng.ingress.enabled Enable ingress record generation Default: true
     enabled: true
-    ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+)
+    ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
     ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
     ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
     className: ""
-    ## @param eng.ingress.annotations Additional annotations for the Ingress resource
+    ## @param eng.ingress.annotations Additional annotations for the Ingress resource Default: {}
     annotations: {}
-    ## @param eng.ingress.host Default host for the ingress record
+    ## @param eng.ingress.host Default host for the ingress record Default: ""
     host: ""
-    ## @param eng.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record
+    ## @param eng.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
     ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
     ## e.g:
     ## tls:
@@ -324,11 +330,11 @@ eng:
 
   ## Enable HorizontalPodAutoscaler for Engine component pods
   ## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
-  ## @param eng.autoscaling.enabled Whether to enable horizontal pod autoscaler
-  ## @param eng.autoscaling.minReplicas Configure a minimum amount of pods
-  ## @param eng.autoscaling.maxReplicas Configure a maximum amount of pods
-  ## @param eng.autoscaling.targetCPUUtilizationPercentage Define the CPU target to trigger the scaling actions (utilization percentage)
-  ## @param eng.autoscaling.targetMemoryUtilizationPercentage Define the memory target to trigger the scaling actions (utilization percentage)
+  ## @param eng.autoscaling.enabled Whether to enable horizontal pod autoscaler Default: true
+  ## @param eng.autoscaling.minReplicas Configure a minimum amount of pods Default: 1
+  ## @param eng.autoscaling.maxReplicas Configure a maximum amount of pods Default: 2
+  ## @param eng.autoscaling.targetCPUUtilizationPercentage Define the CPU target to trigger the scaling actions (utilization percentage) Default: 80
+  ## @param eng.autoscaling.targetMemoryUtilizationPercentage Define the memory target to trigger the scaling actions (utilization percentage) Default: 80
   autoscaling:
     enabled: true
     minReplicas: 1
@@ -336,14 +342,14 @@ eng:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
 
-  ## @param eng.env Add extra environment variables for the Engine component pods
+  ## @param eng.env Add extra environment variables for the Engine component pods Default: [AIR_HOST]
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
   env:
     AIR_HOST: "http://qmig-air-webserver.qmig-ns.svc.cluster.local:8080"
 
-  ## @param eng.envSecret List of secrets with extra environment variables for all the component pods
+  ## @param eng.envSecret List of secrets with extra environment variables for all the component pods Default: [airflow-password]
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -355,13 +361,13 @@ eng:
       secretKey: airflow-password
 
 ## Metadata DB component
-## @param db.name Name for DB component
-## @param db.replicaCount Number of DB component replicas
-## @param db.statefulSet.enabled Deploy App as statefulset
-## @param db.image.repository DB component image repository
-## @param db.image.tag DB component image tag/version
-## @param db.image.pullPolicy DB component pull policy
-## @param db.imagePullSecrets DB component pull secrets
+## @param db.name Name for DB component Default: "db"
+## @param db.replicaCount Number of DB component replicas Default: 1
+## @param db.statefulSet.enabled Deploy App as statefulset Default: false
+## @param db.image.repository DB component image repository Default: "postgres" (hub.docker.com)
+## @param db.image.tag DB component image tag/version Default: "14.2"
+## @param db.image.pullPolicy DB component pull policy Default: "IfNotPresent"
+## @param db.imagePullSecrets DB component pull secrets Default: {}
 db:
   name: "db"
   replicaCount: 1
@@ -374,7 +380,7 @@ db:
 
   imagePullSecrets: {}
 
-  ## @param db.dbshConfig.stringOverride Override shell script to be run on the initial time of DB
+  ## @param db.dbshConfig.stringOverride Override shell script to be run on the initial time of DB Default: ""
   ## the full content of the `db-sh.sh` file (as a string)
   ##   stringOverride: |
   ##     #!/bin/bash
@@ -382,29 +388,29 @@ db:
   dbshConfig:
     stringOverride: ""
 
-  ## @param db.annotations Add extra annotations to the DB component
+  ## @param db.annotations Add extra annotations to the DB component Default: {}
   annotations: {}
-  ## @param db.podAnnotations Add extra Pod annotations to the DB component pods
+  ## @param db.podAnnotations Add extra Pod annotations to the DB component pods Default: {}
   podAnnotations: {}
-  ## @param db.securityContext Configure DB component Security Context
+  ## @param db.securityContext Configure DB component Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param db.containerSecurityContext Configure DB component Container Security Context
+  ## @param db.containerSecurityContext Configure DB component Container Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   containerSecurityContext: {}
-  ## @param db.tolerations Tolerations for DB component pods assignment
+  ## @param db.tolerations Tolerations for DB component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param db.affinity Affinity for DB component pods assignment (evaluated as a template)
+  ## @param db.affinity Affinity for DB component pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param db.nodeSelector Node labels for DB component pods assignment
+  ## @param db.nodeSelector Node labels for DB component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
-  ## @param db.initContainers.loadDB Initialize the container of DB to load the db components
-  ## @param db.initContainers.image.repository Load DB image repository
-  ## @param db.initContainers.image.tag Load DB image tag/version
+  ## Initialize the container of DB to load the db components
+  ## @param db.initContainers.image.repository Load DB image repository Default: "qmigrator.azurecr.io/qmigdb-ini"
+  ## @param db.initContainers.image.tag Load DB image tag/version Default: "1155"
   initContainer:
     loadDB:
       image:
@@ -418,8 +424,16 @@ db:
         limits:
           cpu: 400m
           memory: 600Mi
+      imagePullSecrets: {}
 
-  # @param db.persistentVolume PersistentVolume template for Metadata DB volume
+  ## @param db.persistentVolume.enabled If false, use emptyDir Default: true
+  ## @param db.persistentVolume.accessModes How should the volume accessible in App Default: ReadWriteOnce
+  ## @param db.persistentVolume.annotations Persistent Volume Claim annotations Default: {}
+  ## @param db.persistentVolume.existingClaim Name of PVC created manually before volume Default: ""
+  ## @param db.persistentVolume.subPath Subdirectory of data Persistent Volume to mount Default: ""
+  ## @param db.persistentVolume.size Persistent Volume size Default: 5Gi
+  ## @param db.persistentVolume.storageClass Persistent Volume Storage Class Default: "" (Default from Kubernetes)
+  ## @param db.persistentVolume.volumeBindingMode Persistent Volume Binding Mode Default: "" (Default from Kubernetes)
   persistentVolume:
     ## If false, use emptyDir
     enabled: true
@@ -459,11 +473,11 @@ db:
 
   ## DB component service parameters
   service:
-    ## @param db.service.annotations Additional custom annotations for DB component service
+    ## @param db.service.annotations Additional custom annotations for DB component service Default: {}
     annotations: {}
-    ## @param db.service.type DB component service type
+    ## @param db.service.type DB component service type Default: "ClusterIP"
     type: ClusterIP
-    ## @param db.service.port DB component service HTTP port
+    ## @param db.service.port DB component service HTTP port Default: 5432
     port: 5432
 
   ## @param db.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -475,16 +489,14 @@ db:
       cpu: 400m
       memory: 800Mi
 
-  ## @param db.env Add extra environment variables for the DB component pods
+  ## @param db.env Add extra environment variables for the DB component pods Default: [JDBC_PARAMS]
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
   env:
     JDBC_PARAMS: "sslfactory=org.postgresql.ssl.NonValidatingFactory"
-    PGDATA: "/var/lib/postgresql/data/pgdata"
-    POSTGRES_USER: "postgres"
 
-  ## @param db.envSecret List of secrets with extra environment variables for all the component pods
+  ## @param db.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -492,19 +504,19 @@ db:
   ##    secretKey: SecretKey inside secret
   envSecret: []
  
-  ## @param db.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the DB component pods
-  extraVolumeMounts: []
-  ## @param extraVolumes Optionally specify an extra list of additional volumes for the all the DB component pods
+  ## @param db.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the DB component pods Default: []
+  extraVolumeMounts: [] 
+  ## @param db.extraVolumes Optionally specify an extra list of additional volumes for the all the DB component pods Default: []
   extraVolumes: []
 
 ## Cache component
-## @param msg.name Name for Cache component
-## @param msg.replicaCount Number of Cache component replicas
-## @param msg.statefulSet.enabled Deploy App as statefulset
-## @param msg.image.repository Cache component image repository
-## @param msg.image.tag Cache component image tag/version
-## @param msg.image.pullPolicy Cache component pull policy
-## @param msg.imagePullSecrets Cache component pull secrets
+## @param msg.name Name for Cache component Default: "msg"
+## @param msg.replicaCount Number of Cache component replicas Default: 1
+## @param msg.statefulSet.enabled Deploy App as statefulset Default: false
+## @param msg.image.repository Cache component image repository Default: "eqalpha/keydb"
+## @param msg.image.tag Cache component image tag/version Default: "x86_64_v6.3.4"
+## @param msg.image.pullPolicy Cache component pull policy Default: IfNotPresent
+## @param msg.imagePullSecrets Cache component pull secrets Default: {}
 msg:
   name: "msg"
   replicaCount: 1
@@ -517,10 +529,10 @@ msg:
 
   imagePullSecrets: {}
 
-  ## @param msg.args Args to override Cache component containers in the the deployment(s)/statefulset(s)
+  ## @param msg.args Args to override Cache component containers in the the deployment(s)/statefulset(s) Default: []
   args: []
 
-  ## @param msg.keyDBConfig.stringOverride Override shell script to be run on the initial time of Cache
+  ## @param msg.keyDBConfig.stringOverride Override shell script to be run on the initial time of Cache Default: ""
   ## the full content of the `msg-keys.conf` file (as a string)
   ##   stringOverride: |
   ##     databases 16
@@ -528,27 +540,35 @@ msg:
   keyDBConfig:
     stringOverride: ""
    
-  ## @param msg.annotations Add extra annotations to the Cache component
+  ## @param msg.annotations Add extra annotations to the Cache component Default: {}
   annotations: {}
-  ## @param msg.podAnnotations Add extra Pod annotations to the Cache component pods
+  ## @param msg.podAnnotations Add extra Pod annotations to the Cache component pods Default: {}
   podAnnotations: {}
-  ## @param msg.securityContext Configure Cache component Security Context
+  ## @param msg.securityContext Configure Cache component Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param msg.containerSecurityContext Configure Cache component Container Security Context
+  ## @param msg.containerSecurityContext Configure Cache component Container Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   containerSecurityContext: {}
-  ## @param msg.tolerations Tolerations for Cache component pods assignment
+  ## @param msg.tolerations Tolerations for Cache component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param msg.affinity Affinity for Cache component pods assignment (evaluated as a template)
+  ## @param msg.affinity Affinity for Cache component pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param msg.nodeSelector Node labels for Cache component pods assignment
+  ## @param msg.nodeSelector Node labels for Cache component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
-  ## @param msg.persistentVolume PersistentVolume template for Cache component volume in QMigrator
+  ## PersistentVolume template for Cache component volume in QMigrator
+  ## @param msg.persistentVolume.enabled If false, use emptyDir Default: true
+  ## @param msg.persistentVolume.accessModes How should the volume accessible in App Default: ReadWriteOnce
+  ## @param msg.persistentVolume.annotations Persistent Volume Claim annotations Default: {}
+  ## @param msg.persistentVolume.existingClaim Name of PVC created manually before volume Default: ""
+  ## @param msg.persistentVolume.subPath Subdirectory of data Persistent Volume to mount Default: ""
+  ## @param msg.persistentVolume.size Persistent Volume size Default: 5Gi
+  ## @param msg.persistentVolume.storageClass Persistent Volume Storage Class Default: "" (Default from Kubernetes)
+  ## @param msg.persistentVolume.volumeBindingMode Persistent Volume Binding Mode Default: "" (Default from Kubernetes)
   persistentVolume:
     ## If false, use emptyDir
     enabled: true
@@ -588,11 +608,11 @@ msg:
 
   ## Cache component service parameters
   service:
-    ## @param msg.service.annotations Additional custom annotations for Cache component service
+    ## @param msg.service.annotations Additional custom annotations for Cache component service Default: {}
     annotations: {}
-    ## @param msg.service.type Cache component service type
+    ## @param msg.service.type Cache component service type Default: "ClusterIP"
     type: ClusterIP
-    ## @param msg.service.port Cache component service HTTP port
+    ## @param msg.service.port Cache component service HTTP port Default: 6378
     port: 6379
 
   ## @param msg.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -604,22 +624,22 @@ msg:
       cpu: 200m
       memory: 300Mi
 
-  ## @param msg.master.enabled Run Cache component as master node
+  ## @param msg.master.enabled Run Cache component as master node Default: true
   master:
     enabled: "true"
 
-  ## @param msg.auth.enabled Enabled authentication with password on Cache component
+  ## @param msg.auth.enabled Enabled authentication with password on Cache component Default: true
   ## provided in secret secret.data.REDIS_PASS
   auth:
     enabled: true
 
-  ## @param msg.env Add extra environment variables for the Cache component pods
+  ## @param msg.env Add extra environment variables for the Cache component pods Default: []
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
   env: []
 
-  ## @param msg.envSecret List of secrets with extra environment variables for all the component pods
+  ## @param msg.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -627,18 +647,18 @@ msg:
   ##    secretKey: SecretKey inside secret
   envSecret: []
  
-  ## @param msg.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Cache component pods
+  ## @param msg.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Cache component pods Default: []
   extraVolumeMounts: []
-  ## @param msg.extraVolumes Optionally specify an extra list of additional volumes for the all the Cache component pods
+  ## @param msg.extraVolumes Optionally specify an extra list of additional volumes for the all the Cache component pods Default: []
   extraVolumes: []
 
 
 ## Assessment
-## @param asses.name Name for Assessment
-## @param asses.image.repository Assessment image repository
-## @param asses.image.tag Assessment image tag/version
-## @param asses.image.pullPolicy Assessment pull policy
-## @param asses.imagePullSecrets Assessment pull secrets
+## @param asses.name Name for Assessment Default: "asses"
+## @param asses.image.repository Assessment image repository Default: "qmigrator.azurecr.io/webassotp"
+## @param asses.image.tag Assessment image tag/version Default: "992"
+## @param asses.image.pullPolicy Assessment pull policy Default: "IfNotPresent"
+## @param asses.imagePullSecrets Assessment pull secrets Default: {}
 asses:
   name: "asses"
   image:
@@ -648,41 +668,41 @@ asses:
 
   imagePullSecrets: {}
 
-  ## @param asses.annotations Add extra annotations to the Assessment
+  ## @param asses.annotations Add extra annotations to the Assessment Default: {}
   annotations: {}
-  ## @param asses.podAnnotations Add extra Pod annotations to the Assessment pods
+  ## @param asses.podAnnotations Add extra Pod annotations to the Assessment pods Default: {}
   podAnnotations: {}
-  ## @param asses.securityContext Configure Assessment Security Context
+  ## @param asses.securityContext Configure Assessment Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param asses.containerSecurityContext Configure Assessment Container Security Context
+  ## @param asses.containerSecurityContext Configure Assessment Container Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   containerSecurityContext: {}
-  ## @param asses.tolerations Tolerations for Assessment pods assignment
+  ## @param asses.tolerations Tolerations for Assessment pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param asses.affinity Affinity for Assessment pods assignment (evaluated as a template)
+  ## @param asses.affinity Affinity for Assessment pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param asses.nodeSelector Node labels for Assessment pods assignment
+  ## @param asses.nodeSelector Node labels for Assessment pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
-  ## @param asses.schedule Specifies the cron job schedule using the standard cron syntax
+  ## @param asses.schedule Specifies the cron job schedule using the standard cron syntax Default: "*/10 * * * *"
   schedule: "*/10 * * * *"
-  ## @param asses.failedJobsHistoryLimit How many failed executions to track in history. Default is 1
+  ## @param asses.failedJobsHistoryLimit How many failed executions to track in history. Default: 2
   failedJobsHistoryLimit: 2
-  ## @param asses.successfulJobsHistoryLimit How many successful executions to track in history. Default is 3
+  ## @param asses.successfulJobsHistoryLimit How many successful executions to track in history. Default: 3
   successfulJobsHistoryLimit: 2
-  ## @param asses.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed
+  ## @param asses.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed Default: 500
   startingDeadlineSeconds: 500
-  ## @param asses.concurrencyPolicy Handle scenario when concurrent jobs are scheduled
+  ## @param asses.concurrencyPolicy Handle scenario when concurrent jobs are scheduled Default: Forbid
   concurrencyPolicy: Forbid
-  ## @param asses.restartPolicy Restart the container keeping the same Pod in Node
+  ## @param asses.restartPolicy Restart the container keeping the same Pod in Node Default: Never
   restartPolicy: Never
-  ## @param asses.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds
+  ## @param asses.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds Default: 600
   ttlSecondsAfterFinished: 600
-  ## @param asses.backoffLimit Each pod failure is counted towards the specified limit
+  ## @param asses.backoffLimit Each pod failure is counted towards the specified limit Default: 2
   backoffLimit: 2
  
   ## @param asses.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -694,13 +714,13 @@ asses:
       cpu: 600m
       memory: 1200Mi
 
-  ## @param asses.env Add extra environment variables for the Assessment pods
+  ## @param asses.env Add extra environment variables for the Assessment pods Default: []
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
   env: []
 
-  ## @param asses.envSecret List of secrets with extra environment variables for all the component pods
+  ## @param asses.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -708,17 +728,17 @@ asses:
   ##    secretKey: SecretKey inside secret
   envSecret: []
  
-  ## @param asses.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Assessment pods
+  ## @param asses.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Assessment pods Default: []
   extraVolumeMounts: []
-  ## @param asses.extraVolumes Optionally specify an extra list of additional volumes for the all the Assessment pods
+  ## @param asses.extraVolumes Optionally specify an extra list of additional volumes for the all the Assessment pods Default: []
   extraVolumes: []
 
 ## Conversion
-## @param convs.name Name for Conversion
-## @param convs.image.repository Conversion image repository
-## @param convs.image.tag Conversion image tag/version
-## @param convs.image.pullPolicy Conversion pull policy
-## @param convs.imagePullSecrets Conversion pull secrets
+## @param convs.name Name for Conversion Default: "convs"
+## @param convs.image.repository Conversion image repository Default: "qmigrator.azurecr.io/webconvotp"
+## @param convs.image.tag Conversion image tag/version Default: "993"
+## @param convs.image.pullPolicy Conversion pull policy Default: "IfNotPresent"
+## @param convs.imagePullSecrets Conversion pull secrets Default: {}
 convs:
   name: "convs"
   image:
@@ -728,41 +748,41 @@ convs:
 
   imagePullSecrets: {}
 
-  ## @param convs.annotations Add extra annotations to the Conversion
+  ## @param convs.annotations Add extra annotations to the Conversion Default: {}
   annotations: {}
-  ## @param convs.podAnnotations Add extra Pod annotations to the Conversion pods
+  ## @param convs.podAnnotations Add extra Pod annotations to the Conversion pods Default: {}
   podAnnotations: {}
-  ## @param convs.securityContext Configure Conversion Security Context
+  ## @param convs.securityContext Configure Conversion Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param convs.containerSecurityContext Configure Conversion Container Security Context
+  ## @param convs.containerSecurityContext Configure Conversion Container Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   containerSecurityContext: {}
-  ## @param convs.tolerations Tolerations for Conversion pods assignment
+  ## @param convs.tolerations Tolerations for Conversion pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param convs.affinity Affinity for Conversion pods assignment (evaluated as a template)
+  ## @param convs.affinity Affinity for Conversion pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param convs.nodeSelector Node labels for Conversion pods assignment
+  ## @param convs.nodeSelector Node labels for Conversion pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
-  ## @param convs.schedule Specifies the cron job schedule using the standard cron syntax
+  ## @param convs.schedule Specifies the cron job schedule using the standard cron syntax Default: "*/10 * * * *"
   schedule: "*/10 * * * *"
-  ## @param convs.failedJobsHistoryLimit How many failed executions to track in history. Default is 1
+  ## @param convs.failedJobsHistoryLimit How many failed executions to track in history. Default: 2
   failedJobsHistoryLimit: 2
-  ## @param convs.successfulJobsHistoryLimit How many successful executions to track in history. Default is 3
+  ## @param convs.successfulJobsHistoryLimit How many successful executions to track in history. Default: 2
   successfulJobsHistoryLimit: 2
-  ## @param convs.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed
+  ## @param convs.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed Default: 500
   startingDeadlineSeconds: 500
-  ## @param convs.concurrencyPolicy Handle scenario when concurrent jobs are scheduled
+  ## @param convs.concurrencyPolicy Handle scenario when concurrent jobs are scheduled Default: Forbid
   concurrencyPolicy: Forbid
-  ## @param convs.restartPolicy Restart the container keeping the same Pod in Node
+  ## @param convs.restartPolicy Restart the container keeping the same Pod in Node Default: Never
   restartPolicy: Never
-  ## @param convs.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds
+  ## @param convs.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds Default: 600
   ttlSecondsAfterFinished: 600
-  ## @param convs.backoffLimit Each pod failure is counted towards the specified limit
+  ## @param convs.backoffLimit Each pod failure is counted towards the specified limit Default: 2
   backoffLimit: 2
  
   ## @param convs.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -774,13 +794,13 @@ convs:
       cpu: 600m
       memory: 1200Mi
 
-  ## @param convs.env Add extra environment variables for the Conversion pods
+  ## @param convs.env Add extra environment variables for the Conversion pods Default: []
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
   env: []
 
-  ## @param convs.envSecret List of secrets with extra environment variables for all the component pods
+  ## @param convs.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -788,18 +808,18 @@ convs:
   ##    secretKey: SecretKey inside secret
   envSecret: []
  
-  ## @param convs.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Conversion pods
+  ## @param convs.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Conversion pods Default: []
   extraVolumeMounts: []
-  ## @param convs.extraVolumes Optionally specify an extra list of additional volumes for the all the Conversion pods
+  ## @param convs.extraVolumes Optionally specify an extra list of additional volumes for the all the Conversion pods Default: []
   extraVolumes: []
 
 
 ## Migration
-## @param migrt.name Name for Migration
-## @param migrt.image.repository Migration image repository
-## @param migrt.image.tag Migration image tag/version
-## @param migrt.image.pullPolicy Migration pull policy
-## @param migrt.imagePullSecrets Migration pull secrets
+## @param migrt.name Name for Migration Default: "migrt"
+## @param migrt.image.repository Migration image repository Default: "qmigrator.azurecr.io/webdmotp"
+## @param migrt.image.tag Migration image tag/version Default: "994"
+## @param migrt.image.pullPolicy Migration pull policy Default: "IfNotPresent"
+## @param migrt.imagePullSecrets Migration pull secrets Default: {}
 migrt:
   name: "migrt"
   image:
@@ -809,41 +829,41 @@ migrt:
 
   imagePullSecrets: {}
 
-  ## @param migrt.annotations Add extra annotations to the Migration
+  ## @param migrt.annotations Add extra annotations to the Migration Default: {}
   annotations: {}
-  ## @param migrt.podAnnotations Add extra Pod annotations to the Migration pods
+  ## @param migrt.podAnnotations Add extra Pod annotations to the Migration pods Default: {}
   podAnnotations: {}
-  ## @param migrt.securityContext Configure Migration Security Context
+  ## @param migrt.securityContext Configure Migration Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param migrt.containerSecurityContext Configure Migration Container Security Context
+  ## @param migrt.containerSecurityContext Configure Migration Container Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   containerSecurityContext: {}
-  ## @param migrt.tolerations Tolerations for Migration pods assignment
+  ## @param migrt.tolerations Tolerations for Migration pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param migrt.affinity Affinity for Migration pods assignment (evaluated as a template)
+  ## @param migrt.affinity Affinity for Migration pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param migrt.nodeSelector Node labels for Migration pods assignment
+  ## @param migrt.nodeSelector Node labels for Migration pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
-  ## @param migrt.schedule Specifies the cron job schedule using the standard cron syntax
+  ## @param migrt.schedule Specifies the cron job schedule using the standard cron syntax Default: "*/10 * * * *"
   schedule: "*/10 * * * *"
-  ## @param migrt.failedJobsHistoryLimit How many failed executions to track in history. Default is 1
+  ## @param migrt.failedJobsHistoryLimit How many failed executions to track in history. Default: 2
   failedJobsHistoryLimit: 2
-  ## @param migrt.successfulJobsHistoryLimit How many successful executions to track in history. Default is 3
+  ## @param migrt.successfulJobsHistoryLimit How many successful executions to track in history. Default: 2
   successfulJobsHistoryLimit: 2
-  ## @param migrt.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed
+  ## @param migrt.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed Default: 500
   startingDeadlineSeconds: 500
-  ## @param migrt.concurrencyPolicy Handle scenario when concurrent jobs are scheduled
+  ## @param migrt.concurrencyPolicy Handle scenario when concurrent jobs are scheduled Default: "Forbid"
   concurrencyPolicy: Forbid
-  ## @param migrt.restartPolicy Restart the container keeping the same Pod in Node
+  ## @param migrt.restartPolicy Restart the container keeping the same Pod in Node Default: "Never"
   restartPolicy: Never
-  ## @param migrt.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds
+  ## @param migrt.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds Default: 600
   ttlSecondsAfterFinished: 600
-  ## @param migrt.backoffLimit Each pod failure is counted towards the specified limit
+  ## @param migrt.backoffLimit Each pod failure is counted towards the specified limit Default: 2
   backoffLimit: 2
  
   ## @param migrt.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -855,13 +875,13 @@ migrt:
       cpu: 600m
       memory: 1200Mi
 
-  ## @param migrt.env Add extra environment variables for the Migration pods
+  ## @param migrt.env Add extra environment variables for the Migration pods Default: []
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
   env: []
 
-  ## @param migrt.envSecret List of secrets with extra environment variables for all the component pods
+  ## @param migrt.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -869,18 +889,18 @@ migrt:
   ##    secretKey: SecretKey inside secret
   envSecret: []
  
-  ## @param migrt.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Migration pods
+  ## @param migrt.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Migration pods Default: []
   extraVolumeMounts: []
-  ## @param migrt.extraVolumes Optionally specify an extra list of additional volumes for the all the Migration pods
+  ## @param migrt.extraVolumes Optionally specify an extra list of additional volumes for the all the Migration pods Default: []
   extraVolumes: []
 
 
 ## Testing
-## @param tests.name Name for Testing
-## @param tests.image.repository Testing image repository
-## @param tests.image.tag Testing image tag/version
-## @param tests.image.pullPolicy Testing pull policy
-## @param tests.imagePullSecrets Testing pull secrets
+## @param tests.name Name for Testing Default: "tests"
+## @param tests.image.repository Testing image repository Default: "qmigrator.azurecr.io/webtestotp"
+## @param tests.image.tag Testing image tag/version Default: "971"
+## @param tests.image.pullPolicy Testing pull policy Default: "IfNotPresent"
+## @param tests.imagePullSecrets Testing pull secrets Default: {}
 tests:
   name: "tests"
   image:
@@ -890,41 +910,41 @@ tests:
 
   imagePullSecrets: {}
 
-  ## @param tests.annotations Add extra annotations to the Testing
+  ## @param tests.annotations Add extra annotations to the Testing Default: {}
   annotations: {}
-  ## @param tests.podAnnotations Add extra Pod annotations to the Testing pods
+  ## @param tests.podAnnotations Add extra Pod annotations to the Testing pods Default: {}
   podAnnotations: {}
-  ## @param tests.securityContext Configure Testing Security Context
+  ## @param tests.securityContext Configure Testing Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param tests.containerSecurityContext Configure Testing Container Security Context
+  ## @param tests.containerSecurityContext Configure Testing Container Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   containerSecurityContext: {}
-  ## @param tests.tolerations Tolerations for Testing pods assignment
+  ## @param tests.tolerations Tolerations for Testing pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param tests.affinity Affinity for Testing pods assignment (evaluated as a template)
+  ## @param tests.affinity Affinity for Testing pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param tests.nodeSelector Node labels for Testing pods assignment
+  ## @param tests.nodeSelector Node labels for Testing pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
-  ## @param tests.schedule Specifies the cron job schedule using the standard cron syntax
+  ## @param tests.schedule Specifies the cron job schedule using the standard cron syntax Default: "*/10 * * * *"
   schedule: "*/10 * * * *"
-  ## @param tests.failedJobsHistoryLimit How many failed executions to track in history. Default is 1
+  ## @param tests.failedJobsHistoryLimit How many failed executions to track in history. Default: 2
   failedJobsHistoryLimit: 2
-  ## @param tests.successfulJobsHistoryLimit How many successful executions to track in history. Default is 3
+  ## @param tests.successfulJobsHistoryLimit How many successful executions to track in history. Default: 2
   successfulJobsHistoryLimit: 2
-  ## @param tests.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed
+  ## @param tests.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed Default: 500
   startingDeadlineSeconds: 500
-  ## @param tests.concurrencyPolicy Handle scenario when concurrent jobs are scheduled
+  ## @param tests.concurrencyPolicy Handle scenario when concurrent jobs are scheduled Default: "Forbid"
   concurrencyPolicy: Forbid
-  ## @param tests.restartPolicy Restart the container keeping the same Pod in Node
+  ## @param tests.restartPolicy Restart the container keeping the same Pod in Node Default: "Never"
   restartPolicy: Never
-  ## @param tests.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds
+  ## @param tests.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds Default: 600
   ttlSecondsAfterFinished: 600
-  ## @param tests.backoffLimit Each pod failure is counted towards the specified limit
+  ## @param tests.backoffLimit Each pod failure is counted towards the specified limit Default: 2
   backoffLimit: 2
  
   ## @param tests.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -936,13 +956,13 @@ tests:
       cpu: 600m
       memory: 1200Mi
 
-  ## @param tests.env Add extra environment variables for the Testing pods
+  ## @param tests.env Add extra environment variables for the Testing pods Default: []
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
   env: []
 
-  ## @param tests.envSecret List of secrets with extra environment variables for all the component pods
+  ## @param tests.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -950,18 +970,18 @@ tests:
   ##    secretKey: SecretKey inside secret
   envSecret: []
  
-  ## @param tests.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Testing pods
+  ## @param tests.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Testing pods Default: []
   extraVolumeMounts: []
-  ## @param tests.extraVolumes Optionally specify an extra list of additional volumes for the all the Testing pods
+  ## @param tests.extraVolumes Optionally specify an extra list of additional volumes for the all the Testing pods Default: []
   extraVolumes: []
 
 
 ## Performance
-## @param perfs.name Name for Performance
-## @param perfs.image.repository Performance image repository
-## @param perfs.image.tag Performance image tag/version
-## @param perfs.image.pullPolicy Performance pull policy
-## @param perfs.imagePullSecrets Performance pull secrets
+## @param perfs.name Name for Performance Default: "perfs"
+## @param perfs.image.repository Performance image repository Default: "qmigrator.azurecr.io/webperfotp"
+## @param perfs.image.tag Performance image tag/version Default: "985"
+## @param perfs.image.pullPolicy Performance pull policy Default: "qmigrator.azurecr.io/webperfotp"
+## @param perfs.imagePullSecrets Performance pull secrets Default: {}
 perfs:
   name: "perfs"
   image:
@@ -971,41 +991,41 @@ perfs:
 
   imagePullSecrets: {}
 
-  ## @param perfs.annotations Add extra annotations to the Performance
+  ## @param perfs.annotations Add extra annotations to the Performance Default: {}
   annotations: {}
-  ## @param perfs.podAnnotations Add extra Pod annotations to the Performance pods
+  ## @param perfs.podAnnotations Add extra Pod annotations to the Performance pods Default: {}
   podAnnotations: {}
-  ## @param perfs.securityContext Configure Performance Security Context
+  ## @param perfs.securityContext Configure Performance Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   securityContext: {}
-  ## @param perfs.containerSecurityContext Configure Performance Container Security Context
+  ## @param perfs.containerSecurityContext Configure Performance Container Security Context Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   containerSecurityContext: {}
-  ## @param perfs.tolerations Tolerations for Performance pods assignment
+  ## @param perfs.tolerations Tolerations for Performance pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: {}
-  ## @param perfs.affinity Affinity for Performance pods assignment (evaluated as a template)
+  ## @param perfs.affinity Affinity for Performance pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param perfs.nodeSelector Node labels for Performance pods assignment
+  ## @param perfs.nodeSelector Node labels for Performance pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
-  ## @param perfs.schedule Specifies the cron job schedule using the standard cron syntax
+  ## @param perfs.schedule Specifies the cron job schedule using the standard cron syntax Default: "*/10 * * * *"
   schedule: "*/10 * * * *"
-  ## @param perfs.failedJobsHistoryLimit How many failed executions to track in history. Default is 1
+  ## @param perfs.failedJobsHistoryLimit How many failed executions to track in history. Default: 2
   failedJobsHistoryLimit: 2
-  ## @param perfs.successfulJobsHistoryLimit How many successful executions to track in history. Default is 3
+  ## @param perfs.successfulJobsHistoryLimit How many successful executions to track in history. Default: 2
   successfulJobsHistoryLimit: 2
-  ## @param perfs.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed
+  ## @param perfs.startingDeadlineSeconds How many seconds a job is allowed to miss its scheduled start time before it is considered failed Default: 500
   startingDeadlineSeconds: 500
-  ## @param perfs.concurrencyPolicy Handle scenario when concurrent jobs are scheduled
+  ## @param perfs.concurrencyPolicy Handle scenario when concurrent jobs are scheduled Default: Forbid
   concurrencyPolicy: Forbid
-  ## @param perfs.restartPolicy Restart the container keeping the same Pod in Node
+  ## @param perfs.restartPolicy Restart the container keeping the same Pod in Node Default: Never
   restartPolicy: Never
-  ## @param perfs.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds
+  ## @param perfs.ttlSecondsAfterFinished Clean up finished Jobs after the specific seconds Default: 600
   ttlSecondsAfterFinished: 600
-  ## @param perfs.backoffLimit Each pod failure is counted towards the specified limit
+  ## @param perfs.backoffLimit Each pod failure is counted towards the specified limit Default: 2
   backoffLimit: 2
  
   ## @param perfs.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -1017,13 +1037,13 @@ perfs:
       cpu: 600m
       memory: 1200Mi
 
-  ## @param perfs.env Add extra environment variables for the Performance pods
+  ## @param perfs.env Add extra environment variables for the Performance pods Default: []
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
   env: []
 
-  ## @param perfs.envSecret List of secrets with extra environment variables for all the component pods
+  ## @param perfs.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -1031,7 +1051,7 @@ perfs:
   ##    secretKey: SecretKey inside secret
   envSecret: []
 
-  ## @param perfs.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Performance pods
+  ## @param perfs.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Performance pods Default: []
   extraVolumeMounts: []
-  ## @param perfs.extraVolumes Optionally specify an extra list of additional volumes for the all the Performance pods
+  ## @param perfs.extraVolumes Optionally specify an extra list of additional volumes for the all the Performance pods Default: []
   extraVolumes: []

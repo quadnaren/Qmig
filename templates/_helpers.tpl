@@ -192,7 +192,11 @@ component: {{ .Values.db.name | quote }}
       name: {{ include "qmig.secret" . }}
       key: POSTGRES_PASSWORD
 - name: POSTGRES_DB
-  value: {{- printf " prjdb%s" (.Values.secret.data.PROJECT_ID | toString) -}}
+  value: {{- printf " prjdb%s" (.Values.secret.data.PROJECT_ID | toString) }}
+- name: PGDATA
+  value: "/var/lib/postgresql/data/pgdata"
+- name: POSTGRES_USER
+  value: "postgres"
 {{- end -}}
 
 
