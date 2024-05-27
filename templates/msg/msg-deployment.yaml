@@ -60,7 +60,7 @@ spec:
             - "/etc/keydb/keydb.conf"
           {{- if .Values.msg.auth.enabled }}
             - "--requirepass"
-            - "$REDIS_PASS"
+            - "$(REDIS_PASS)"
           {{- end }}
           {{- with .Values.msg.args }}
           {{- range . }}

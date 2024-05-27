@@ -4,7 +4,7 @@
 - Project information given by vendor like Poject ID, Name, Login information etc.
 - Docker Image registry credentails given by vendor
 
-> [!NOTES]
+> [!NOTE]
 Above parameters requires in secret creation. Check secret & imageCredentials section of values.yaml
 
 ## Required namespace or create own
