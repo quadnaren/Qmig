@@ -1,10 +1,11 @@
 # Qmigrator Helm
 
 # Pre-requisites
-- Qmigrator requires the project information given by vendor
-- Poject ID, Name, Login information etc.
+- Project information given by vendor like Poject ID, Name, Login information etc.
 - Docker Image registry credentails given by vendor
-- Need to set runtime or can be override in values.yaml
+
+> [!NOTES]
+Above parameters requires in secret creation. Check secret & imageCredentials section of values.yaml
 
 ## Requied namespace or create own
 ```
@@ -22,18 +23,24 @@ helm install <name> qmigrator/qmig \
   --set imageCredentials.data.username="userxxxx" --set imageCredentials.data.password="passxxxx"
 ```
 
+## Data Persistence
+- Qmigrator use shared volume for components like App, Engine & Others
+- While Metadata DB (Postgres) & Cache Component have their own
+- Override the pre-created PVC from persistentVolume.existingClaim flag in values.yaml
+- You may use the existing/default StorageClass for dynamic volume creation
+
+> [!Tip]
+Please check the examples for creating custom StorageClass, PV & PVC from this repo & override persistentVolume.existingClaim <br>
+More Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+
+> [!IMPORTANT]
+DO NOT USE ReadWriteMany or Shared Persitent volume given here to the Metadata DB (Postgres) & Cache Component
+
 # Customise Qmigrator
 Use values.yaml from this repo, edit as required and use while installing Helm
 ```
 helm install <name> qmigrator/qmig -f values.yaml
 ```
-
-## Examples
-### Docker Desktop shared file
-See the example/pv-docker-desktop.yaml for create mounted pv on local desktop
-
-### Minikube shared file
-See the example/pv-minikube.yaml for create mounted pv on local device
 
 ## Values.YAML
 ### Globals
@@ -339,4 +346,13 @@ See the example/pv-minikube.yaml for create mounted pv on local device
 | perfs.envSecret | List of secrets with extra environment variables for all the component pods |
 | perfs.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Performance pods |
 | perfs.extraVolumes | Optionally specify an extra list of additional volumes for the all the Performance pods |
-|
+
+
+## Examples
+### Docker Desktop shared volume (Win)
+> See the example/pv-docker-desktop.yaml
+- Use on Docker Desktop Kubernetes, LocalPath as windows device path
+
+### Minikube shared volume (Linux, Win, MacOS etc.)
+> See the example/pv-minikube.yaml
+- Use on Minikube, LocalPath as local device path
