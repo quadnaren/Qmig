@@ -7,7 +7,7 @@
 > [!NOTES]
 Above parameters requires in secret creation. Check secret & imageCredentials section of values.yaml
 
-## Requied namespace or create own
+## Required namespace or create own
 ```
 Kubectl create namespace qmig-ns 
 Kubectl config set-context --current --namespace=qmig-ns
@@ -145,7 +145,7 @@ helm install <name> qmigrator/qmig -f values.yaml
 | eng.autoscaling.targetMemoryUtilizationPercentage | Define the memory target to trigger the scaling actions (utilization percentage) |
 | eng.env | Add extra environment variables for the Engine component pods |
 | eng.envSecret | List of secrets with extra environment variables for all the component pods |
-### Metadat DB
+### Metadata DB
 | Property | Description |
 | :--- | :--- |
 | db.name | Name for DB component |
@@ -346,7 +346,6 @@ helm install <name> qmigrator/qmig -f values.yaml
 | perfs.envSecret | List of secrets with extra environment variables for all the component pods |
 | perfs.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Performance pods |
 | perfs.extraVolumes | Optionally specify an extra list of additional volumes for the all the Performance pods |
-
 
 ## Examples
 ### Docker Desktop shared volume (Win)
