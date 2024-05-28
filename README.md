@@ -154,8 +154,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | eng.autoscaling.maxReplicas | Configure a maximum amount of pods | 2 | 
 | eng.autoscaling.targetCPUUtilizationPercentage | Define the CPU target to trigger the scaling actions (utilization percentage) | 80 | 
 | eng.autoscaling.targetMemoryUtilizationPercentage | Define the memory target to trigger the scaling actions (utilization percentage) | 80 | 
-| eng.env | Add extra environment variables for the Engine component pods | [AIR_HOST] | 
-| eng.envSecret | List of secrets with extra environment variables for all the component pods | [airflow-password] | 
+| eng.env | Add extra environment variables for the Engine component pods | [] | 
+| eng.envSecret | List of secrets with extra environment variables for all the component pods | [] | 
 ### Metadata DB
 | Property | Description | Default |
 | :--- | :--- | :--- |
@@ -373,9 +373,13 @@ helm install <name> qmigrator/qmig -f values.yaml
 
 ## Examples
 ### Docker Desktop shared volume (Win)
-> See the example/pv-docker-desktop.yaml
 - Use on Docker Desktop Kubernetes, LocalPath as windows device path
+> See the example/pv-docker-desktop.yaml
 
 ### Minikube shared volume (Linux, Win, MacOS etc.)
+- Mount the local path while starting minikube
+- eg. /hostpc on minikube points to {LOCAL_PATH} of device
+``
+minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
+``
 > See the example/pv-minikube.yaml
-- Use on Minikube, LocalPath as local device path

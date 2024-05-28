@@ -346,8 +346,7 @@ eng:
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
-  env:
-    AIR_HOST: "http://qmig-air-webserver.qmig-ns.svc.cluster.local:8080"
+  env: []
 
   ## @param eng.envSecret List of secrets with extra environment variables for all the component pods Default: [airflow-password]
   ## Example:
@@ -355,10 +354,7 @@ eng:
   ##  - name: ENV_NAME
   ##    secretRef: SecretName
   ##    secretKey: SecretKey inside secret
-  envSecret:
-    - name: airflow-password
-      secretRef: qmig-air-keys
-      secretKey: airflow-password
+  envSecret: []
 
 ## Metadata DB component
 ## @param db.name Name for DB component Default: "db"
@@ -1055,3 +1051,11 @@ perfs:
   extraVolumeMounts: []
   ## @param perfs.extraVolumes Optionally specify an extra list of additional volumes for the all the Performance pods Default: []
   extraVolumes: []
+
+airflow:
+  envSecret:
+    - name: airflow-password
+      secretRef: qmig-air-keys
+      secretKey: airflow-password
+  env:
+    AIR_HOST: "http://qmig-air-webserver.qmig-ns.svc.cluster.local:8080"

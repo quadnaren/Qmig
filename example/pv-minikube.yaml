@@ -19,7 +19,7 @@ spec:
   storageClassName: disk-csi
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: {{LOCAL_PATH}}
+    path: /hostpc
 ---
 # Source: qmig/templates/air/air-pvc.yaml
 apiVersion: v1
