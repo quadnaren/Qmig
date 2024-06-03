@@ -41,16 +41,18 @@ Return the appropriate apiVersion for deployment.
 {{- end -}}
 {{- end -}}
 
-
 {{/*
 Define the qmig.namespace template if set with forceNamespace or .Release.Namespace is set
 */}}
 {{- define "qmig.namespace" -}}
-{{- if .Values.forceNamespace -}}
-{{ printf "namespace: %s" .Values.forceNamespace }}
-{{- else -}}
 {{ printf "namespace: %s" .Release.Namespace }}
 {{- end -}}
+
+{{/*
+Define the qmig.namespace template if set with forceNamespace or .Release.Namespace is set
+*/}}
+{{- define "qmig.namespace_plain" -}}
+{{ printf "%s" .Release.Namespace }}
 {{- end -}}
 
 
@@ -130,6 +132,10 @@ component: {{ .Values.eng.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.eng.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.eng.hostname" -}}
+{{- printf "http://" -}}{{- include "qmig.eng.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.{{- printf "%s" .Values.clusterDomain -}}:8080
+{{- end -}}
+
 {{- define "qmig.eng.env" }}
 - name: REDIS_PASS
   valueFrom:
@@ -141,10 +147,17 @@ component: {{ .Values.eng.name | quote }}
     secretKeyRef:
       name: {{ include "qmig.secret" . }}
       key: PROJECT_NAME
+- name: airflow-password
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.airflow.secret" . }}
+      key: airflow-password
 - name: POSTGRES_HOST
-  value: {{- printf " " -}}{{- include "qmig.db.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.cluster.local
+  value: {{ include "qmig.db.hostname" . }}
 - name: REDIS_HOST
-  value: {{- printf " " -}}{{- include "qmig.msg.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.cluster.local
+  value: {{ include "qmig.msg.hostname" . }}
+- name: AIR_HOST
+  value: {{ include "qmig.airflow.hostname" . }}
 {{- end }}
 
 {{- define "qmig.eng.volumeMounts" }}
@@ -183,9 +196,29 @@ component: {{ .Values.db.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.db.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.db.hostname" -}}
+{{- include "qmig.db.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.{{- printf "%s" .Values.clusterDomain -}}
+{{- end -}}
+
+{{- define "qmig.db.username" -}}
+{{- printf "postgres" -}}
+{{- end -}}
+
+{{- define "qmig.db.password" -}}
+{{- printf "%s" .Values.secret.data.POSTGRES_PASSWORD | required ".Values.secret.data.POSTGRES_PASSWORD is required."  -}}
+{{- end -}}
+
+{{- define "qmig.db.port" -}}
+{{ if hasKey .Values.db.env "POSTGRES_PORT" }}
+{{- .Values.db.env.POSTGRES_PORT | print -}}
+{{ else }}
+{{- "5432" -}}
+{{ end }} 
+{{- end -}}
+
 {{- define "qmig.db.env" -}}
 - name: POSTGRES_PORT
-  value: {{- printf " %s" (default "5432" .Values.db.env.POSTGRES_PORT | toString | quote) }}
+  value: {{ (include "qmig.db.port" .) | quote }}
 - name: POSTGRES_PASSWORD
   valueFrom:
     secretKeyRef:
@@ -196,7 +229,7 @@ component: {{ .Values.db.name | quote }}
 - name: PGDATA
   value: "/var/lib/postgresql/data/pgdata"
 - name: POSTGRES_USER
-  value: "postgres"
+  value: {{ include "qmig.db.username" . }}
 {{- end -}}
 
 
@@ -250,6 +283,10 @@ component: {{ .Values.msg.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.msg.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.msg.hostname" -}}
+{{- include "qmig.msg.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.{{- printf "%s" .Values.clusterDomain -}}
+{{- end -}}
+
 {{- define "qmig.msg.env" -}}
 {{- if .Values.msg.auth.enabled }}
 - name: REDIS_PASS
@@ -267,7 +304,7 @@ component: {{ .Values.msg.name | quote }}
       name: {{ include "qmig.secret" . }}
       key: PROJECT_ID
 - name: API_HOST
-  value: {{- printf " http://" -}}{{- include "qmig.eng.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.cluster.local:8080
+  value: {{ include "qmig.eng.hostname" . }}
 {{- end -}}
 
 
@@ -517,3 +554,194 @@ imagePullSecrets:
     {{- end }}
   {{- end }}
 {{- end -}}
+
+
+{{/*
+All specification for airflow
+*/}}
+{{- define "qmig.airflow.selectorLabels" -}}
+main: {{ .Values.airflow.name | quote }}
+{{ include "qmig.selectorLabels" . }}
+{{- end -}}
+
+{{- define "qmig.airflow.labels" -}}
+{{ include "qmig.airflow.selectorLabels" . }}
+{{ include "qmig.labels" . }}
+{{- end -}}
+
+{{- define "qmig.airflow.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Values.airflow.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "qmig.airflow.config" -}}
+{{ include "qmig.airflow.fullname" . }}-config
+{{- end -}}
+
+{{- define "qmig.airflow.baseUrl" -}}
+{{- printf "%s" (default "0.0.0.0" .Values.airflow.baseUrl) }}
+{{- end -}}
+
+{{- define "qmig.airflow.secret" -}}
+{{- printf "%s" .Values.airflow.secret.secretName | default "qmig-air-secret" -}}
+{{- end -}}
+
+{{- define "qmig.airflow.home" -}}
+{{- printf "/opt/airflow" }}
+{{- end -}}
+
+{{- define "qmig.airflow.dags" -}}
+{{- printf "%s/dags" (include "qmig.airflow.home" .) }}
+{{- end -}}
+
+{{- define "qmig.airflow.template" -}}
+  {{- printf "%s/pod_templates" (include "qmig.airflow.home" .) }}
+{{- end -}}
+
+{{- define "qmig.airflow.image" -}}
+{{- printf "%s:%s" (.Values.airflow.image.repository ) (.Values.airflow.image.tag) }}
+{{- end -}}
+
+{{- define "qmig.airflow.hostname" -}}
+{{- printf "http://" -}}{{- include "qmig.airflow.fullname" . -}}-webserver.{{- printf "%s" .Release.Namespace -}}.svc.{{- printf "%s" .Values.clusterDomain -}}:8080
+{{- end -}}
+
+{{/* Standard Airflow environment variables */}}
+{{- define "qmig.airflow.env" }}
+- name: AIRFLOW__CORE__FERNET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.airflow.secret" . }}
+      key: airflow-fernet-key
+- name: AIRFLOW_HOME
+  value: {{ include "qmig.airflow.home" . }}
+- name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.airflow.secret" . }}
+      key: connection
+- name: AIRFLOW_CONN_AIRFLOW_DB
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.airflow.secret" . }}
+      key: connection
+- name: AIRFLOW__WEBSERVER__SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.airflow.secret" . }}
+      key: airflow-secret-key
+- name: EXTRA_FOLDER
+  value: '/opt/airflow/extra'
+- name: MY_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qmig.airflow.secret" . }}
+      key: airflow-password
+{{- end -}}
+
+{{- define "qmig.airflow.volumeMounts" }}
+- name: {{ .pvctemp }}
+  mountPath: /tmp
+  subPath: "tmp"
+- name: config
+  mountPath: /opt/airflow/pod_templates/pod_template_file.yaml
+  subPath: pod_template_file.yaml
+- name: config
+  mountPath: "/opt/airflow/airflow.cfg"
+  subPath: airflow.cfg
+- name: config
+  mountPath: "/opt/airflow/config/airflow_local_settings.py"
+  subPath: airflow_local_settings.py
+- name: config
+  mountPath: "/opt/airflow/webserver_config.py"
+  subPath: webserver_config.py
+- name: {{ .pvcname }}
+  mountPath: "/opt/airflow/logs"
+  subPath: logs
+{{- end }}
+
+{{- define "qmig.airflow.dataMounts" }}
+{{- include "qmig.airflow.volumeMounts" (dict "Values" .Values "pvcname" .pvcname "pvctemp" .pvctemp )  }}
+- name: {{ .pvcname }}
+  mountPath: /opt/airflow/dags
+  subPath: dags
+- name: {{ .pvcname }}
+  mountPath: /opt/airflow/extra
+  subPath: extra
+{{- end }}
+
+{{/*
+All specification for PVC
+*/}}
+{{- define "qmig.airflow.volume" }}
+- name: config
+  configMap:
+    name: {{ include "qmig.airflow.config" . }}
+{{- end }}
+
+
+{{- define "containerSecurityContext" -}}
+  {{- $ := index . 0 -}}
+  {{- with index . 1 }}
+    {{- if .securityContexts.container -}}
+      {{ toYaml .securityContexts.container | print }}
+    {{- else if $.Values.airflow.securityContexts.containers -}}
+      {{ toYaml $.Values.airflow.securityContexts.containers | print }}
+    {{- else -}}
+allowPrivilegeEscalation: false
+capabilities:
+  drop:
+    - ALL
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+
+{{- define "airflowPodSecurityContext" -}}
+  {{- $ := index . 0 -}}
+  {{- with index . 1 }}
+    {{- if .securityContexts.pod -}}
+      {{ toYaml .securityContexts.pod | print }}
+    {{- else if $.Values.airflow.securityContexts.pod -}}
+      {{ toYaml $.Values.airflow.securityContexts.pod | print }}
+    {{- else -}}
+runAsUser: {{ $.Values.airflow.uid }}
+fsGroup: {{ $.Values.airflow.gid }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+
+{{- define "qmig.airflow.scheduler_liveness_check_command" }}
+  - sh
+  - -c
+  - |
+    CONNECTION_CHECK_MAX_COUNT=0 AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR exec /entrypoint \
+    airflow jobs check --job-type SchedulerJob --local
+{{- end }}
+
+{{- define  "qmig.airflow.scheduler_startup_check_command" }}
+  - sh
+  - -c
+  - |
+    CONNECTION_CHECK_MAX_COUNT=0 AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR exec /entrypoint \
+    airflow jobs check --job-type SchedulerJob --local
+{{- end }}
+
+{{- define  "qmig.airflow.create_userjob_args" }}
+  - bash
+  - /opt/airflow/access.sh
+{{- end }}
+
+{{- define  "qmig.airflow.migration_job_args" }}
+  - "bash"
+  - "-c"
+  - >-
+    exec airflow db migrate
+{{- end }}
+
+{{- define "qmig.airflow.wait-for-migrations-command" }}
+  - airflow
+  - db
+  - check-migrations
+  - --migration-wait-timeout={{ .Values.airflow.waitForMigrations.migrationsWaitTimeout | default 60 }}
+{{- end }}

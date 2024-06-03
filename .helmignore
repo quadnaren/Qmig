@@ -24,3 +24,10 @@
 *.md
 robots.txt
 *.tgz
+# msg
+# ingresscontroller
+# eng
+# db
+# crons
+# common
+# app

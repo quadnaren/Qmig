@@ -175,7 +175,7 @@ helm install <name> qmigrator/qmig -f values.yaml
 | db.affinity | Affinity for DB component pods assignment (evaluated as a template) | {} | 
 | db.nodeSelector | Node labels for DB component pods assignment | {} | 
 | db.initContainers.image.repository | Load DB image repository | "qmigrator.azurecr.io/qmigdb-ini" | 
-| db.initContainers.image.tag | Load DB image tag/version | "1155" | 
+| db.initContainers.image.tag | Load DB image tag/version | "1164" | 
 | db.initContainers.resources | Set Init container requests and limits for different resources like CPU or memory | 
 | db.persistentVolume.enabled | If false, use emptyDir | true | 
 | db.persistentVolume.accessModes | How should the volume accessible in App | ReadWriteOnce | 

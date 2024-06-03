@@ -83,7 +83,7 @@ spec:
                   apiVersion: v1
                   fieldPath: metadata.name
             {{- include "qmig.project.env" . | nindent 12 }}
-            {{- include "qmig.msg.env" . | nindent 12 }}
+            {{- include "qmig.msg.env" . | indent 12 }}
             {{- if .Values.msg.master.enabled }}
             - name: MASTER
               value: "true"

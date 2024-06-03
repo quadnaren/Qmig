@@ -5,6 +5,9 @@
 ## @param nameOverride String to partially override name template (will maintain the release name) Default: ""
 nameOverride: ""
 
+## @param clusterDomain Kubernetes Cluster Domain Default: "cluster.local"
+clusterDomain: "cluster.local"
+
 ## Required global project information to be created in secret
 secret:
   ## @param secret.secretName Name for project secret Default: "" (name: qmig-secret)
@@ -171,7 +174,7 @@ app:
   containerSecurityContext: {}
   ## @param app.tolerations Tolerations for App Component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param app.affinity Affinity for App Component pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -276,7 +279,7 @@ eng:
   containerSecurityContext: {}
   ## @param eng.tolerations Tolerations for Engine component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param eng.affinity Affinity for Engine component pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -342,7 +345,7 @@ eng:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
 
-  ## @param eng.env Add extra environment variables for the Engine component pods Default: [AIR_HOST]
+  ## @param eng.env Add extra environment variables for the Engine component pods Default: []
   ## Example:
   ## env:
   ##  ENV_NAME: ENV_VALUE
@@ -396,7 +399,7 @@ db:
   containerSecurityContext: {}
   ## @param db.tolerations Tolerations for DB component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param db.affinity Affinity for DB component pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -406,12 +409,12 @@ db:
 
   ## Initialize the container of DB to load the db components
   ## @param db.initContainers.image.repository Load DB image repository Default: "qmigrator.azurecr.io/qmigdb-ini"
-  ## @param db.initContainers.image.tag Load DB image tag/version Default: "1155"
+  ## @param db.initContainers.image.tag Load DB image tag/version Default: "1164"
   initContainer:
     loadDB:
       image:
         repository: qmigrator.azurecr.io/qmigdb-ini
-        tag: "1155"
+        tag: "1164"
       ## @param db.initContainers.resources Set Init container requests and limits for different resources like CPU or memory
       resources:
         requests:
@@ -548,7 +551,7 @@ msg:
   containerSecurityContext: {}
   ## @param msg.tolerations Tolerations for Cache component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param msg.affinity Affinity for Cache component pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -676,7 +679,7 @@ asses:
   containerSecurityContext: {}
   ## @param asses.tolerations Tolerations for Assessment pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param asses.affinity Affinity for Assessment pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -756,7 +759,7 @@ convs:
   containerSecurityContext: {}
   ## @param convs.tolerations Tolerations for Conversion pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param convs.affinity Affinity for Conversion pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -837,7 +840,7 @@ migrt:
   containerSecurityContext: {}
   ## @param migrt.tolerations Tolerations for Migration pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param migrt.affinity Affinity for Migration pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -918,7 +921,7 @@ tests:
   containerSecurityContext: {}
   ## @param tests.tolerations Tolerations for Testing pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param tests.affinity Affinity for Testing pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -999,7 +1002,7 @@ perfs:
   containerSecurityContext: {}
   ## @param perfs.tolerations Tolerations for Performance pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: {}
+  tolerations: []
   ## @param perfs.affinity Affinity for Performance pods assignment (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
@@ -1052,10 +1055,373 @@ perfs:
   ## @param perfs.extraVolumes Optionally specify an extra list of additional volumes for the all the Performance pods Default: []
   extraVolumes: []
 
+
+## Airflow
+## @param airflow.enabled Name for Airflow Default: true
+## @param airflow.name Name for Airflow Default: "airflow"
+## @param airflow.uid User id for Airflow Default: "5000"
+## @param airflow.gid group id for Airflow Default: "4000"
+## @param airflow.image.repository Airflow image repository Default: "qmigrator.azurecr.io/qmigair"
+## @param airflow.image.tag Airflow image tag/version Default: "2.8.4-ofjv-lvs"
+## @param airflow.image.pullPolicy Airflow pull policy Default: "IfNotPresent"
+## @param airflow.imagePullSecrets Airflow pull secrets Default: {}
 airflow:
-  envSecret:
-    - name: airflow-password
-      secretRef: qmig-air-keys
-      secretKey: airflow-password
-  env:
-    AIR_HOST: "http://qmig-air-webserver.qmig-ns.svc.cluster.local:8080"
+  enabled: true
+  name: "airflow"
+  uid: 106665
+  gid: 106966
+
+  ## Enable RBAC (default on most clusters these days)
+  ## Role Based Access
+  ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
+  ## @param airflow.rbac.create Create Role and RoleBinding Default: true
+  rbac:
+    ## - if `false`, you must create a custom Role and RoleBinding for the ServiceAccount defined in `serviceAccount.name`
+    create: true
+
+  image:
+    repository: qmigrator.azurecr.io/qmigair
+    pullPolicy: IfNotPresent
+    tag: "2.8.4-ofjv-lvs"
+
+  imagePullSecrets: {}
+
+  ## @param airflow.baseUrl Base URL of Airflow Webserver Default: http://0.0.0.0:8080/airflow
+  baseUrl: http://0.0.0.0:8080/airflow
+
+  ## Config settings to go into the mounted airflow.cfg
+  ## @param airflow.config Config settings to go into the mounted airflow.cfg Default: 
+  config:
+    api:
+      auth_backends: airflow.api.auth.backend.basic_auth
+    celery:
+      worker_concurrency: 16
+    celery_kubernetes_executor:
+      kubernetes_queue: kubernetes
+    cli:
+     endpoint_url: '{{ include "qmig.airflow.baseUrl" . }}'
+    core: 
+      colored_console_log: False
+      dagbag_import_timeout: 30
+      dags_folder: '{{ include "qmig.airflow.dags" . }}'
+      executor: KubernetesExecutor
+      load_examples: False
+      remote_logging: False
+      parallelism: 64
+      default_pool_task_slot_count: 200
+    database: 
+      load_default_connections: False
+    kubernetes: 
+      airflow_configmap: '{{ include "qmig.airflow.config" . }}'
+      airflow_local_settings_configmap: '{{ include "qmig.airflow.config" . }}'
+      multi_namespace_mode: False
+      namespace: '{{ .Release.Namespace }}'
+      pod_template_file: '{{ include "qmig.airflow.template" . }}/pod_template_file.yaml'
+      worker_container_repository: '{{ .Values.airflow.image.repository }}'
+      worker_container_tag: '{{ .Values.airflow.image.tag }}'
+    kubernetes_executor: 
+      multi_namespace_mode: False
+      namespace: qmig-ns
+      pod_template_file: '{{ include "qmig.airflow.template" . }}/pod_template_file.yaml'
+      worker_container_repository: '{{ .Values.airflow.image.repository }}'
+      worker_container_tag: '{{ .Values.airflow.image.tag }}'
+    logging: 
+      colored_console_log: False
+      remote_logging: False
+    metrics: 
+      statsd_host: qmig-air-statsd
+      statsd_on: False
+      statsd_port: 9125
+      statsd_prefix: airflow
+    scheduler: 
+      enable_health_check: True
+      run_duration: 41460
+      standalone_dag_processor: False
+      statsd_host: qmig-air-statsd
+      statsd_on: False
+      statsd_port: 9125
+      statsd_prefix: airflow
+    triggerer: 
+      default_capacity: 1000
+    webserver: 
+      base_url: '{{ include "qmig.airflow.baseUrl" . }}'
+      cookie_secure: False
+      enable_proxy_fix: True
+      expose_config: False
+      rbac: True
+      warn_deployment_exposure: False
+
+  ## @param airflow.airflowLocalSettings file as a string (can be templated) Default: ~
+  airflowLocalSettings: ~
+
+  ## @param airflow.podTemplate is a templated string containing the contents of `pod_template_file.yaml` used for KubernetesExecutor workers.
+  podTemplate: ~
+  ## podTemplate: |
+  ##   apiVersion: v1
+  ##   kind: Pod
+  ##   metadata:
+  ##     name: placeholder-name
+  ##     labels:
+  ##       tier: airflow
+
+  ## @param airflow.webserverConfig string (can be templated) will be mounted into the Airflow Webserver Default: ~
+  ## as a custom webserver_config.py
+  webserverConfig: ~
+  ## webserverConfig: |
+  ##   from airflow import configuration as conf
+
+  ##   # The SQLAlchemy connection string.
+  ##   SQLALCHEMY_DATABASE_URI = conf.get('data
+
+  ## @param airflow.securityContexts.pod Detailed default security context for airflow deployments Pods
+  ## @param airflow.securityContexts.pod Detailed default security context for airflow deployments Container
+  securityContexts:
+    pod: {}
+    containers: {}
+
+  ## @param airflow.tolerations Tolerations for Airflow pods assignment Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+  ## @param airflow.affinity Affinity for Airflow pods assignment (evaluated as a template) Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+  ## @param airflow.nodeSelector Node labels for Airflow pods assignment Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  nodeSelector: {}
+
+  ## Airflow Webserver
+  ## @param airflow.webserver.replicas Number of Airflow Webserver replicas Default: 1
+  webserver:
+    replicas: 1
+    ## @param airflow.webserver.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    safeToEvict: true
+    ## @param airflow.webserver.annotations Add extra annotations to the Airflow Webserver Default: {}
+    annotations: {}
+    ## @param airflow.webserver.podAnnotations Add extra Pod annotations to the Airflow Webserver pods Default: {}
+    podAnnotations: {}
+    ## @param airflow.webserver.securityContext.pod default security context for Webserver pods Default: {}
+    ## @param airflow.webserver.securityContext.container default security context for Webserver containers Default: {}
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+    securityContexts:
+      pod: {}
+      container: {}
+
+    ## Configure extra options for Airflow containers liveness, readiness and startup
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+    ## @param airflow.webserver.livenessProbe livenessProbe on Airflow webserver
+    ## @param airflow.webserver.readinessProbe readinessProbe on Airflow webserver
+    ## @param airflow.webserver.startupProbe startupProbe on Airflow webserver
+    livenessProbe: {}
+    readinessProbe: {}
+    startupProbe: {}
+
+    ## @param airflow.webserver.command Command to use when running the Airflow webserver (templated).
+    command: ~
+    ## @param airflow.webserver.args Args to use when running the Airflow webserver (templated).
+    args: ["bash", "-c", "exec airflow webserver"]
+
+    ## @param airflow.webserver.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 300m
+        memory: 600Mi
+
+    ## Airflow Webserver service parameters
+    service:
+      ## @param airflow.webserver.service.annotations Additional custom annotations for Airflow Webserver service Default: {}
+      annotations: {}
+      ## @param airflow.webserver.service.type Airflow Webserver service type Default: "ClusterIP"
+      type: ClusterIP
+      ## @param airflow.webserver.service.port Airflow Webserver service HTTP port Default: 6378
+      port: 8080
+  
+  ## Airflow Scheduler
+  ## @param airflow.scheduler.replicas Number of Airflow Scheduler replicas Default: 1
+  scheduler:
+    replicas: 1
+    ## @param airflow.scheduler.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    safeToEvict: true
+    ## @param airflow.scheduler.annotations Add Airflow Scheduler annotations to the Performance Default: {}
+    annotations: {}
+    ## @param airflow.scheduler.podAnnotations Add Airflow Scheduler Pod annotations to the Performance pods Default: {}
+    podAnnotations: {}
+    ## @param airflow.scheduler.securityContext.pod default security context for Scheduler pods Default: {}
+    ## @param airflow.scheduler.securityContext.container default security context for Scheduler containers Default: {}
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+    securityContexts:
+      pod: {}
+      container: {}
+
+    ## Configure extra options for Airflow containers liveness, readiness and startup
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+    ## @param airflow.scheduler.livenessProbe livenessProbe on Airflow Scheduler
+    ## @param airflow.scheduler.readinessProbe readinessProbe on Airflow Scheduler
+    ## @param airflow.scheduler.startupProbe startupProbe on Airflow Scheduler
+    livenessProbe: {}
+    readinessProbe: {}
+    startupProbe: {}
+
+    ## @param airflow.scheduler.command Command to use when running the Airflow scheduler (templated).
+    command: ~
+    ## @param airflow.scheduler.args Args to use when running the Airflow scheduler (templated).
+    args: ["bash", "-c", "exec airflow scheduler"]
+
+    ## @param airflow.scheduler.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 300m
+        memory: 600Mi
+
+  ## Airflow Worker
+  worker:
+    ## @param airflow.worker.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    safeToEvict: true
+    ## @param airflow.worker.annotations Add Airflow Worker annotations to the Performance Default: {}
+    annotations: {}
+    ## @param airflow.worker.podAnnotations Add Airflow Worker Pod annotations to the Performance pods Default: {}
+    podAnnotations: {}
+    ## @param airflow.worker.securityContext.pod default security context for Worker pods Default: {}
+    ## @param airflow.worker.securityContext.container default security context for Worker containers Default: {}
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+    securityContexts:
+      pod: {}
+      container: {}
+    
+    ## @param airflow.worker.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 300m
+        memory: 600Mi
+
+  ## Airflow WaitForMigrations
+  waitForMigrations:
+    ## @param airflow.waitForMigrations.enabled Whether to create init container to wait for db migrations
+    enabled: true
+    ## @param airflow.waitForMigrations.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    safeToEvict: true
+    ## @param airflow.waitForMigrations.annotations Add Airflow waitForMigrations annotations to the Performance Default: {}
+    annotations: {}
+    ## @param airflow.waitForMigrations.podAnnotations Add Airflow waitForMigrations Pod annotations to the Performance pods Default: {}
+    podAnnotations: {}
+    ## @param airflow.waitForMigrations.securityContext.container default security context for waitForMigrations containers Default: {}
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+    securityContexts:
+      container: {}
+
+    ## @param airflow.waitForMigrations.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 300m
+        memory: 600Mi
+
+  ## Airflow create user job settings
+  createUserJob:
+    ## @param airflow.createUserJob.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    safeToEvict: true
+    ## @param airflow.createUserJob.annotations Add Airflow createUserJob annotations to the Performance Default: {}
+    annotations: {}
+    ## @param airflow.createUserJob.podAnnotations Add Airflow createUserJob Pod annotations to the Performance pods Default: {}
+    podAnnotations: {}
+    ## @param airflow.createUserJob.securityContext.pod default security context for createUserJob pods Default: {}
+    ## @param airflow.createUserJob.securityContext.container default security context for Worker containers Default: {}
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+    securityContexts:
+      pod: {}
+      container: {}
+
+    ## @param airflow.createUserJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 300m
+        memory: 600Mi
+  
+  # Airflow database migration job settings
+  migrateDatabaseJob:
+    ## @param airflow.migrateDatabaseJob.enabled Whether to create init container to wait for db migrations
+    enabled: true
+    ## @param airflow.migrateDatabaseJob.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    safeToEvict: true
+    ## @param airflow.migrateDatabaseJob.annotations Add Airflow migrateDatabaseJob annotations to the Performance Default: {}
+    annotations: {}
+    ## @param airflow.migrateDatabaseJob.podAnnotations Add Airflow waitForMigrations Pod annotations to the Performance pods Default: {}
+    podAnnotations: {}
+    ## @param airflow.migrateDatabaseJob.securityContext.pod default security context for migrateDatabaseJob pods Default: {}
+    ## @param airflow.migrateDatabaseJob.securityContext.container default security context for Worker containers Default: {}
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+    securityContexts:
+      pod: {}
+      container: {}
+    
+    ## @param airflow.migrateDatabaseJob.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 300m
+        memory: 600Mi
+
+  ## Airflow ingress parameters
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+  ingress:
+    ## @param airflow.ingress.enabled Enable ingress record generation Default: true
+    enabled: true
+    ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
+    ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
+    ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
+    className: ""
+    ## @param airflow.ingress.annotations Additional annotations for the Ingress resource Default: {}
+    annotations: {}
+    ## @param airflow.ingress.host Default host for the ingress record Default: ""
+    host: ""
+    ## @param airflow.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+    ## e.g:
+    ## tls:
+    ## - hosts:
+    ##     - airflow.local
+    ##   secretName: airflow.local-tls
+
+  ## @param airflow.env Add extra environment variables for the Airflow pods Default: []
+  ## Example:
+  ## env:
+  ##  ENV_NAME: ENV_VALUE
+  env: []
+
+  ## @param airflow.envSecret List of secrets with extra environment variables for all the component pods Default: [airflow-password]
+  ## Example:
+  ## envSecret:
+  ##  - name: ENV_NAME
+  ##    secretRef: SecretName
+  ##    secretKey: SecretKey inside secret
+  envSecret: []
+
+  ## Required Airflow credentials for secret
+  secret:
+    ## @param airflow.secret.secretName Name for project secret Default: "" (name: qmig-air-keys)
+    secretName: ""
+    data:
+      ## @param airflow.secret.data.airflow_secret_key Random generated key for webserver Default: null
+      airflow_secret_key: null
+      ## @param airflow.secret.data.airflow_fernet_key Random generated key for airflow Default: null
+      airflow_fernet_key: null
+      ## @param airflow.secret.data.airflow_password Airflow login password Default: null
+      airflow_password: null
+      ## @param airflow.secret.data.connection Connection string for Airflow metadta DB Default: null
+      ## postgresql://<stats user>:<password>@127.0.0.1:5432/database?<connection params>
+      connection: null
