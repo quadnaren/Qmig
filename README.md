@@ -3,12 +3,6 @@
 ## Visit GitHub On for more information
 https://github.com/quadnaren/Qmig
 
-# Pre-requisites
-- Qmigrator requires the project information given by vendor
-- Poject ID, Name, Login information etc.
-- Docker Image registry credentails given by vendor
-- Need to set runtime or can be override in values.yaml
-
 ## Requied namespace or create own
 ```
 Kubectl create namespace qmig-ns 
@@ -25,9 +19,8 @@ helm install <name> qmigrator/qmig \
   --set imageCredentials.data.username="userxxxx" --set imageCredentials.data.password="passxxxx"
 ```
 
-# Customise Qmigrator
-Use values.yaml from this repo, edit as required and use while installing Helm
+## If Airflow enabled in Qmigrator
+- Pass additional param to install command
 ```
-helm install <name> qmigrator/qmig -f values.yaml
+  --set airflow.enabled=true --set airflow.secret.data.airflow-password="passxxxx"
 ```
-
