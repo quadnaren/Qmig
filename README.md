@@ -386,7 +386,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | perfs.envSecret | List of secrets with extra environment variables for all the component pods | [] | 
 | perfs.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Performance pods | [] | 
 | perfs.extraVolumes | Optionally specify an extra list of additional volumes for the all the Performance pods | [] | 
-### Airflow
+### Airflow Global
 | Property | Description | Default |
 | :--- | :--- | :--- |
 | airflow.enabled | Name for Airflow | false | 
@@ -408,6 +408,21 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.tolerations | Tolerations for Airflow pods | {} | 
 | airflow.affinity | Affinity for Airflow pods (evaluated as a template) | {} | 
 | airflow.nodeSelector | Node labels for Airflow pods | {} | 
+| airflow.ingress.enabled | Enable ingress record generation | true | 
+| airflow.ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
+| airflow.ingress.annotations | Additional annotations for the Ingress resource | {} | 
+| airflow.ingress.host | Default host for the ingress record | "" | 
+| airflow.ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
+| airflow.env | Add extra environment variables for the Airflow pods | [] | 
+| airflow.envSecret | List of secrets with extra environment variables for all the component pods | [] | 
+| airflow.secret.secretName | Name for project secret | "" (name: qmig-air-secret) | 
+| airflow.secret.data.airflow_secret_key | Random generated key for webserver | null | 
+| airflow.secret.data.airflow_fernet_key | Random generated key for airflow | null | 
+| airflow.secret.data.airflow_password | Airflow login password | null | 
+| airflow.secret.data.connection | Connection string for Airflow metadta DB | null | 
+### Airflow Webserver
+| Property | Description | Default |
+| :--- | :--- | :--- |
 | airflow.webserver.replicas | Number of Airflow Webserver replicas | 1 | 
 | airflow.webserver.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.webserver.annotations | Add extra annotations to the Airflow Webserver | {} | 
@@ -423,6 +438,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.webserver.service.annotations | Additional custom annotations for Airflow Webserver service | {} | 
 | airflow.webserver.service.type | Airflow Webserver service type | "ClusterIP" | 
 | airflow.webserver.service.port | Airflow Webserver service HTTP port | 8080 | 
+### Airflow Scheduler
+| Property | Description | Default |
+| :--- | :--- | :--- |
 | airflow.scheduler.replicas | Number of Airflow Scheduler replicas | 1 | 
 | airflow.scheduler.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.scheduler.annotations | Add extra annotations to the Airflow Scheduler | {} | 
@@ -435,24 +453,36 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.scheduler.command | Command to use when running the Airflow scheduler | ~ | 
 | airflow.scheduler.args | Args to use when running the Airflow scheduler | ["bash", "-c", "exec airflow scheduler"] | 
 | airflow.scheduler.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+### Airflow Worker
+| Property | Description | Default |
+| :--- | :--- | :--- |
 | airflow.worker.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.worker.annotations | Add extra annotations to the Airflow Worker | {} | 
 | airflow.worker.podAnnotations | Add extra Pod annotations to the Airflow Worker pods | {} | 
 | airflow.worker.securityContext.pod | default security context for Worker pods | {} | 
 | airflow.worker.securityContext.container | default security context for Worker containers | {} | 
 | airflow.worker.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+### Init-container to wait migration
+| Property | Description | Default |
+| :--- | :--- | :--- |
 | airflow.waitForMigrations.enabled | Whether to create init container to wait for db migrations | true | 
 | airflow.waitForMigrations.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.waitForMigrations.annotations | Add extra annotations to the waitForMigrations | {} | 
 | airflow.waitForMigrations.podAnnotations | Add extra Pod annotations to the waitForMigrations pods | {} | 
 | airflow.waitForMigrations.securityContext.container | default security context for waitForMigrations containers | {} | 
 | airflow.waitForMigrations.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+### Airflow Create User Job
+| Property | Description | Default |
+| :--- | :--- | :--- |
 | airflow.createUserJob.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.createUserJob.annotations | Add extra annotations to the createUserJob | {} | 
 | airflow.createUserJob.podAnnotations | Add extra Pod annotations to the createUserJob pods | {} | 
 | airflow.createUserJob.securityContext.pod | default security context for createUserJob pods | {} | 
 | airflow.createUserJob.securityContext.container | default security context for createUserJob containers | {} | 
 | airflow.createUserJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+### Airflow DB Migration Job
+| Property | Description | Default |
+| :--- | :--- | :--- |
 | airflow.migrateDatabaseJob.enabled | Whether to create init container to wait for db migrations | true | 
 | airflow.migrateDatabaseJob.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.migrateDatabaseJob.annotations | Add extra annotations to the migrateDatabaseJob | {} | 
@@ -460,15 +490,3 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.migrateDatabaseJob.securityContext.pod | default security context for migrateDatabaseJob pods | {} | 
 | airflow.migrateDatabaseJob.securityContext.container | default security context for migrateDatabaseJob containers | {} | 
 | airflow.migrateDatabaseJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
-| airflow.ingress.enabled | Enable ingress record generation | true | 
-| airflow.ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
-| airflow.ingress.annotations | Additional annotations for the Ingress resource | {} | 
-| airflow.ingress.host | Default host for the ingress record | "" | 
-| airflow.ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
-| airflow.env | Add extra environment variables for the Airflow pods | [] | 
-| airflow.envSecret | List of secrets with extra environment variables for all the component pods | [] | 
-| airflow.secret.secretName | Name for project secret | "" (name: qmig-air-secret) | 
-| airflow.secret.data.airflow_secret_key | Random generated key for webserver | null | 
-| airflow.secret.data.airflow_fernet_key | Random generated key for airflow | null | 
-| airflow.secret.data.airflow_password | Airflow login password | null | 
-| airflow.secret.data.connection | Connection string for Airflow metadta DB | null | 

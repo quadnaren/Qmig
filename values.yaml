@@ -1176,6 +1176,57 @@ airflow:
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
+  
+  ## Airflow ingress parameters
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+  ingress:
+    ## @param airflow.ingress.enabled Enable ingress record generation Default: true
+    enabled: true
+    ## @param airflow.ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
+    ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
+    ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
+    className: ""
+    ## @param airflow.ingress.annotations Additional annotations for the Ingress resource Default: {}
+    annotations: {}
+    ## @param airflow.ingress.host Default host for the ingress record Default: ""
+    host: ""
+    ## @param airflow.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+    ## e.g:
+    ## tls:
+    ## - hosts:
+    ##     - airflow.local
+    ##   secretName: airflow.local-tls
+
+  ## @param airflow.env Add extra environment variables for the Airflow pods Default: []
+  ## Example:
+  ## env:
+  ##  ENV_NAME: ENV_VALUE
+  env: []
+
+  ## @param airflow.envSecret List of secrets with extra environment variables for all the component pods Default: []
+  ## Example:
+  ## envSecret:
+  ##  - name: ENV_NAME
+  ##    secretRef: SecretName
+  ##    secretKey: SecretKey inside secret
+  envSecret: []
+
+  ## Required Airflow credentials for secret
+  secret:
+    ## @param airflow.secret.secretName Name for project secret Default: "" (name: qmig-air-secret)
+    secretName: ""
+    data:
+      ## @param airflow.secret.data.airflow_secret_key Random generated key for webserver Default: null
+      airflow_secret_key: null
+      ## @param airflow.secret.data.airflow_fernet_key Random generated key for airflow Default: null
+      airflow_fernet_key: null
+      ## @param airflow.secret.data.airflow_password Airflow login password Default: null
+      airflow_password: null
+      ## @param airflow.secret.data.connection Connection string for Airflow metadta DB Default: null
+      ## postgresql://<stats user>:<password>@127.0.0.1:5432/database?<connection params>
+      connection: null
+
   ## Airflow Webserver
   ## @param airflow.webserver.replicas Number of Airflow Webserver replicas Default: 1
   webserver:
@@ -1362,53 +1413,3 @@ airflow:
       limits:
         cpu: 300m
         memory: 600Mi
-
-  ## Airflow ingress parameters
-  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
-  ingress:
-    ## @param airflow.ingress.enabled Enable ingress record generation Default: true
-    enabled: true
-    ## @param airflow.ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
-    ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
-    ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
-    className: ""
-    ## @param airflow.ingress.annotations Additional annotations for the Ingress resource Default: {}
-    annotations: {}
-    ## @param airflow.ingress.host Default host for the ingress record Default: ""
-    host: ""
-    ## @param airflow.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
-    ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
-    ## e.g:
-    ## tls:
-    ## - hosts:
-    ##     - airflow.local
-    ##   secretName: airflow.local-tls
-
-  ## @param airflow.env Add extra environment variables for the Airflow pods Default: []
-  ## Example:
-  ## env:
-  ##  ENV_NAME: ENV_VALUE
-  env: []
-
-  ## @param airflow.envSecret List of secrets with extra environment variables for all the component pods Default: []
-  ## Example:
-  ## envSecret:
-  ##  - name: ENV_NAME
-  ##    secretRef: SecretName
-  ##    secretKey: SecretKey inside secret
-  envSecret: []
-
-  ## Required Airflow credentials for secret
-  secret:
-    ## @param airflow.secret.secretName Name for project secret Default: "" (name: qmig-air-secret)
-    secretName: ""
-    data:
-      ## @param airflow.secret.data.airflow_secret_key Random generated key for webserver Default: null
-      airflow_secret_key: null
-      ## @param airflow.secret.data.airflow_fernet_key Random generated key for airflow Default: null
-      airflow_fernet_key: null
-      ## @param airflow.secret.data.airflow_password Airflow login password Default: null
-      airflow_password: null
-      ## @param airflow.secret.data.connection Connection string for Airflow metadta DB Default: null
-      ## postgresql://<stats user>:<password>@127.0.0.1:5432/database?<connection params>
-      connection: null
