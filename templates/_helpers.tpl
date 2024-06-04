@@ -113,17 +113,19 @@ component: {{ .Values.eng.name | quote }}
     secretKeyRef:
       name: {{ include "qmig.secret" . }}
       key: PROJECT_NAME
+- name: POSTGRES_HOST
+  value: {{ include "qmig.db.hostname" . }}
+- name: REDIS_HOST
+  value: {{ include "qmig.msg.hostname" . }}
+  {{- if .Values.airflow.enabled }}
+- name: AIR_HOST
+  value: {{ include "qmig.airflow.hostname" . }}
 - name: airflow-password
   valueFrom:
     secretKeyRef:
       name: {{ include "qmig.airflow.secret" . }}
       key: airflow-password
-- name: POSTGRES_HOST
-  value: {{ include "qmig.db.hostname" . }}
-- name: REDIS_HOST
-  value: {{ include "qmig.msg.hostname" . }}
-- name: AIR_HOST
-  value: {{ include "qmig.airflow.hostname" . }}
+  {{- end }}
 {{- end }}
 
 {{- define "qmig.eng.volumeMounts" }}

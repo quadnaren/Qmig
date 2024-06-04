@@ -111,6 +111,9 @@ ingressController:
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: {}
 
+  ## @param ingressController.isDefaultClass Set Ingress class as default to cluster Default: true
+  isDefaultClass: true
+
 ## Service account for QMigrator pods to use.
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:

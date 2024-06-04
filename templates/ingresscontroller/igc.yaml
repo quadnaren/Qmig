@@ -382,7 +382,9 @@ metadata:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/component: controller
   annotations:
+    {{- if .Values.ingressController.isDefaultClass }}
     "ingressclass.kubernetes.io/is-default-class": "true"
+    {{- end }}
     "helm.sh/hook": pre-install,pre-upgrade
   name: nginx
 spec:

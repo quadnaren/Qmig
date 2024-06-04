@@ -112,6 +112,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | ingressController.webhookImage.repository | Ingress controller image repository | qmigrator.azurecr.io/ingress-nginx/kube-webhook-certgen | 
 | ingressController.webhookImage.tag | Ingress controller image tag/version | "v20231011-8b53cabe0" | 
 | ingressController.imagePullSecrets | Ingress Controller component pull secrets | {} | 
+| ingressController.isDefaultClass | Set Ingress class as default to cluster | true | 
 ### Service Account
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
