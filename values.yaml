@@ -36,7 +36,7 @@ imageCredentials:
 
 ## QMigrator shares PersistentVolume & information about the volume folders used by Airflow too
 ## @param shared.persistentVolume.enabled If false, use emptyDir Default: true
-## @param shared.persistentVolume.accessModes How should the volume accessible in App Default: ReadWriteMany
+## @param shared.persistentVolume.accessModes How should the volume be accessible in App Default: ReadWriteMany
 ## @param shared.persistentVolume.annotations Persistent Volume Claim annotations Default: {}
 ## @param shared.persistentVolume.existingClaim Name of PVC created manually before volume Default: ""
 ## @param shared.persistentVolume.subPath Subdirectory of data Persistent Volume to mount Default: ""
@@ -95,7 +95,7 @@ shared:
 ## https://kubernetes.github.io/ingress-nginx/deploy/
 ingressController:
   ## @param ingressController.enabled Whether or not to install the ingressController Default: true
-  enabled: true
+  enabled: false
   ## @param ingressController.controllerImage.repository Ingress controller image repository Default: qmigrator.azurecr.io/ingress-nginx/controller
   ## @param ingressController.controllerImage.tag Ingress controller image tag/version Default: "v1.9.4"
   controllerImage:
@@ -496,7 +496,7 @@ db:
  
   ## @param db.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the DB component pods Default: []
   extraVolumeMounts: [] 
-  ## @param db.extraVolumes Optionally specify an extra list of additional volumes for the all the DB component pods Default: []
+  ## @param db.extraVolumes Optionally specify an extra list of additional volumes for all the DB component pods Default: []
   extraVolumes: []
 
 ## Cache component
@@ -549,7 +549,7 @@ msg:
 
   ## PersistentVolume template for Cache component volume in QMigrator
   ## @param msg.persistentVolume.enabled If false, use emptyDir Default: true
-  ## @param msg.persistentVolume.accessModes How should the volume accessible in App Default: ReadWriteOnce
+  ## @param msg.persistentVolume.accessModes How should the volume be accessible in App Default: ReadWriteOnce
   ## @param msg.persistentVolume.annotations Persistent Volume Claim annotations Default: {}
   ## @param msg.persistentVolume.existingClaim Name of PVC created manually before volume Default: ""
   ## @param msg.persistentVolume.subPath Subdirectory of data Persistent Volume to mount Default: ""
@@ -636,7 +636,7 @@ msg:
  
   ## @param msg.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Cache component pods Default: []
   extraVolumeMounts: []
-  ## @param msg.extraVolumes Optionally specify an extra list of additional volumes for the all the Cache component pods Default: []
+  ## @param msg.extraVolumes Optionally specify an extra list of additional volumes for all the Cache component pods Default: []
   extraVolumes: []
 
 
@@ -717,7 +717,7 @@ asses:
  
   ## @param asses.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Assessment pods Default: []
   extraVolumeMounts: []
-  ## @param asses.extraVolumes Optionally specify an extra list of additional volumes for the all the Assessment pods Default: []
+  ## @param asses.extraVolumes Optionally specify an extra list of additional volumes for all the Assessment pods Default: []
   extraVolumes: []
 
 ## Conversion
@@ -797,7 +797,7 @@ convs:
  
   ## @param convs.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Conversion pods Default: []
   extraVolumeMounts: []
-  ## @param convs.extraVolumes Optionally specify an extra list of additional volumes for the all the Conversion pods Default: []
+  ## @param convs.extraVolumes Optionally specify an extra list of additional volumes for all the Conversion pods Default: []
   extraVolumes: []
 
 
@@ -878,7 +878,7 @@ migrt:
  
   ## @param migrt.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Migration pods Default: []
   extraVolumeMounts: []
-  ## @param migrt.extraVolumes Optionally specify an extra list of additional volumes for the all the Migration pods Default: []
+  ## @param migrt.extraVolumes Optionally specify an extra list of additional volumes for all the Migration pods Default: []
   extraVolumes: []
 
 
@@ -959,7 +959,7 @@ tests:
  
   ## @param tests.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Testing pods Default: []
   extraVolumeMounts: []
-  ## @param tests.extraVolumes Optionally specify an extra list of additional volumes for the all the Testing pods Default: []
+  ## @param tests.extraVolumes Optionally specify an extra list of additional volumes for all the Testing pods Default: []
   extraVolumes: []
 
 
@@ -1040,7 +1040,7 @@ perfs:
 
   ## @param perfs.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Performance pods Default: []
   extraVolumeMounts: []
-  ## @param perfs.extraVolumes Optionally specify an extra list of additional volumes for the all the Performance pods Default: []
+  ## @param perfs.extraVolumes Optionally specify an extra list of additional volumes for all the Performance pods Default: []
   extraVolumes: []
 
 
@@ -1054,7 +1054,7 @@ perfs:
 ## @param airflow.image.pullPolicy Airflow pull policy Default: "IfNotPresent"
 ## @param airflow.imagePullSecrets Airflow pull secrets Default: {}
 airflow:
-  enabled: true
+  enabled: false
   name: "airflow"
   uid: 106665
   gid: 106966
@@ -1223,7 +1223,7 @@ airflow:
       airflow_fernet_key: null
       ## @param airflow.secret.data.airflow_password Airflow login password Default: null
       airflow_password: null
-      ## @param airflow.secret.data.connection Connection string for Airflow metadta DB Default: null
+      ## @param airflow.secret.data.connection Connection string for Airflow metadata DB Default: null
       ## postgresql://<stats user>:<password>@127.0.0.1:5432/database?<connection params>
       connection: null
 
@@ -1231,7 +1231,7 @@ airflow:
   ## @param airflow.webserver.replicas Number of Airflow Webserver replicas Default: 1
   webserver:
     replicas: 1
-    ## @param airflow.webserver.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    ## @param airflow.webserver.safeToEvict This setting tells Kubernetes that its ok to evict Default: true
     safeToEvict: true
     ## @param airflow.webserver.annotations Add extra annotations to the Airflow Webserver Default: {}
     annotations: {}
@@ -1244,7 +1244,7 @@ airflow:
       pod: {}
       container: {}
 
-    ## Configure extra options for Airflow containers liveness, readiness and startup
+    ## Configure extra options for Airflow containers' liveness, readiness, and startup
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
     ## @param airflow.webserver.livenessProbe livenessProbe on Airflow webserver
     ## @param airflow.webserver.readinessProbe readinessProbe on Airflow webserver
@@ -1280,7 +1280,7 @@ airflow:
   ## @param airflow.scheduler.replicas Number of Airflow Scheduler replicas Default: 1
   scheduler:
     replicas: 1
-    ## @param airflow.scheduler.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    ## @param airflow.scheduler.safeToEvict This setting tells Kubernetes that its ok to evict Default: true
     safeToEvict: true
     ## @param airflow.scheduler.annotations Add extra annotations to the Airflow Scheduler Default: {}
     annotations: {}
@@ -1293,7 +1293,7 @@ airflow:
       pod: {}
       container: {}
 
-    ## Configure extra options for Airflow containers liveness, readiness and startup
+    ## Configure extra options for Airflow containers' liveness, readiness, and startup
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
     ## @param airflow.scheduler.livenessProbe livenessProbe on Airflow Scheduler
     ## @param airflow.scheduler.readinessProbe readinessProbe on Airflow Scheduler
@@ -1318,7 +1318,7 @@ airflow:
 
   ## Airflow Worker
   worker:
-    ## @param airflow.worker.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    ## @param airflow.worker.safeToEvict This setting tells Kubernetes that its ok to evict Default: true
     safeToEvict: true
     ## @param airflow.worker.annotations Add extra annotations to the Airflow Worker Default: {}
     annotations: {}
@@ -1342,9 +1342,9 @@ airflow:
 
   ## Airflow WaitForMigrations
   waitForMigrations:
-    ## @param airflow.waitForMigrations.enabled Whether to create init container to wait for db migrations Default: true
+    ## @param airflow.waitForMigrations.enabled Whether to create an init container to wait for db migrations Default: true
     enabled: true
-    ## @param airflow.waitForMigrations.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    ## @param airflow.waitForMigrations.safeToEvict This setting tells Kubernetes that its ok to evict Default: true
     safeToEvict: true
     ## @param airflow.waitForMigrations.annotations Add extra annotations to the waitForMigrations Default: {}
     annotations: {}
@@ -1366,7 +1366,7 @@ airflow:
 
   ## Airflow create user job settings
   createUserJob:
-    ## @param airflow.createUserJob.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    ## @param airflow.createUserJob.safeToEvict This setting tells Kubernetes that its ok to evict Default: true
     safeToEvict: true
     ## @param airflow.createUserJob.annotations Add extra annotations to the createUserJob Default: {}
     annotations: {}
@@ -1390,15 +1390,15 @@ airflow:
   
   # Airflow database migration job settings
   migrateDatabaseJob:
-    ## @param airflow.migrateDatabaseJob.enabled Whether to create init container to wait for db migrations Default: true
+    ## @param airflow.migrateDatabaseJob.enabled Whether to create an init container to wait for db migrations Default: true
     enabled: true
-    ## @param airflow.migrateDatabaseJob.safeToEvict This setting tells kubernetes that its ok to evict Default: true
+    ## @param airflow.migrateDatabaseJob.safeToEvict This setting tells Kubernetes that its ok to evict Default: true
     safeToEvict: true
     ## @param airflow.migrateDatabaseJob.annotations Add extra annotations to the migrateDatabaseJob Default: {}
     annotations: {}
-    ## @param airflow.migrateDatabaseJob.podAnnotations Add extra Pod annotations to the migrateDatabaseJob pods Default: {}
+    ## @param airflow.migrateDatabaseJob.podAnnotations Add extra Pod annotations to the migrateDatabaseJob pod Default: {}
     podAnnotations: {}
-    ## @param airflow.migrateDatabaseJob.securityContexts.pod default security context for migrateDatabaseJob pods Default: {}
+    ## @param airflow.migrateDatabaseJob.securityContexts.pod default security context for migrateDatabaseJob pod Default: {}
     ## @param airflow.migrateDatabaseJob.securityContexts.container default security context for migrateDatabaseJob containers Default: {}
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
     securityContexts:
