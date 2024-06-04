@@ -24,6 +24,7 @@
 *.md
 robots.txt
 *.tgz
+# airflow
 # msg
 # ingresscontroller
 # eng

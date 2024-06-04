@@ -1,6 +1,4 @@
-################################
-## Airflow ConfigMap
-#################################
+{{- if .Values.airflow.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -45,3 +43,4 @@ data:
     {{- else }}
       {{- tpl (.Files.Get "files/webserver.py") . | nindent 4 }}
     {{- end }}
+{{- end }}

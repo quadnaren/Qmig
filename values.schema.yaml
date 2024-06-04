@@ -12,7 +12,16 @@ imageCredentials:
     username: "xxxxxx-951af420-xxxxxx"
     password: "xxxxxx-R518xxxxxxxx"
 
+## Required exsiting or new PVC to be created
 shared:
   persistentVolume:
     existingClaim: "qmig-shared"
     subPath: "cloud"
+
+## Airflow configuration
+airflow:
+  enabled: true
+  secret:
+    data:
+      ## Required airflow Password if enabled
+      airflow_password: xxxx

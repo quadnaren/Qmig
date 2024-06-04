@@ -1,4 +1,4 @@
-{{- if .Values.airflow.ingress.enabled -}}
+{{- if and .Values.airflow.enabled .Values.airflow.ingress.enabled }}
 {{- $fullName := printf "%s-%s" (include "qmig.airflow.fullname" .) "webserver" -}}
 {{- $svcPort := .Values.airflow.webserver.service.port -}}
 {{- if .Values.airflow.ingress.className }}

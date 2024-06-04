@@ -1,3 +1,8 @@
+{{- $nodeSelector := .Values.eng.nodeSelector }}
+{{- $affinity := .Values.eng.affinity }}
+{{- $tolerations := .Values.eng.tolerations }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.eng) }}
+{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.eng) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.eng.fullname" .) "empty" -}}
 {{- $pvc := include "qmig.pv.shared" . -}}
 apiVersion: apps/v1
@@ -13,7 +18,7 @@ metadata:
   {{- end }}
 spec:
   {{- if not .Values.eng.autoscaling.enabled }}
-  replicas: {{ .Values.eng.replicaCount }}
+  replicas: {{ .Values.eng.replicas }}
   {{- end }}
   selector:
     matchLabels:
@@ -27,24 +32,12 @@ spec:
       labels:
         {{- include "qmig.eng.selectorLabels" . | nindent 8 }}
     spec:
-      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.eng.imagePullSecrets) | indent 6 -}}   
-      {{- with .Values.eng.securityContext }}
-      securityContext:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "qmig.dockerauthList" (list . .Values.eng) | indent 6 }}
+      securityContext: {{ $securityContext | nindent 8 }}
+      nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
+      affinity: {{- toYaml $affinity | nindent 8 }}
+      tolerations: {{- toYaml $tolerations | nindent 8 }}
       serviceAccountName: {{ template "qmig.serviceAccountName" . }}
-      {{- with .Values.eng.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.eng.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.eng.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       containers:
         - name: {{ .Values.eng.name }}
           image: "{{ .Values.eng.image.repository }}:{{ .Values.eng.image.tag }}"
@@ -53,12 +46,9 @@ spec:
             - name: {{ .Values.eng.name }}-tcp
               containerPort: 8080
               protocol: TCP
+          securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.eng.resources | nindent 12 }}
-          {{- with .Values.eng.containerSecurityContext }}
-          securityContext:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
           env:
             - name: POD_NAMESPACE
               valueFrom:

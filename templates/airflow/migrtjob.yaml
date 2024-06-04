@@ -1,10 +1,12 @@
+{{- if and .Values.airflow.enabled .Values.airflow.migrateDatabaseJob.enabled }}
 {{- $nodeSelector := .Values.airflow.nodeSelector }}
 {{- $affinity := .Values.airflow.affinity }}
 {{- $tolerations := .Values.airflow.tolerations }}
-{{- $securityContext := include "airflowPodSecurityContext" (list . .Values.airflow.migrateDatabaseJob) }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.airflow.migrateDatabaseJob) }}
 {{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.airflow.migrateDatabaseJob) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.airflow.fullname" .) "empty" -}}
 {{- $pvc := include "qmig.pv.shared" . -}}
+{{- $defaultAuth := include "qmig.dockerauth" . -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -40,7 +42,7 @@ spec:
       nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
       affinity: {{- toYaml $affinity | nindent 8 }}
       tolerations: {{- toYaml $tolerations | nindent 8 }}
-      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.airflow.imagePullSecrets) | indent 6 }}
+      {{- include "qmig.dockerauthList" (list . .Values.airflow) | indent 6 }}
       containers:
         - name: run-airflow-migrations
           imagePullPolicy: {{ .Values.airflow.image.pullPolicy }}
@@ -68,3 +70,4 @@ spec:
       {{- if .Values.airflow.extraVolumes }}
         {{- toYaml .Values.airflow.extraVolumes | nindent 8 }}
       {{- end }}
+{{- end }}

@@ -1,3 +1,8 @@
+{{- $nodeSelector := .Values.convs.nodeSelector }}
+{{- $affinity := .Values.convs.affinity }}
+{{- $tolerations := .Values.convs.tolerations }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.convs) }}
+{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.convs) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.convs.fullname" .) "empty" -}}
 {{- $pvc := include "qmig.pv.shared" . -}}
 apiVersion: batch/v1
@@ -27,38 +32,22 @@ spec:
           labels:
             {{- include "qmig.convs.labels" . | nindent 12 }}
           {{- with .Values.convs.annotations }}
-          annotations:
-            {{ toYaml . | nindent 12 }}
+          annotations: {{ toYaml . | nindent 12 }}
           {{- end }}
         spec:
-          {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.convs.imagePullSecrets) | indent 10 -}}
-          {{- with .Values.convs.securityContext }}
-          securityContext:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+          {{- include "qmig.dockerauthList" (list . .Values.convs) | indent 10 }}
+          securityContext: {{ $securityContext | nindent 12 }}
+          nodeSelector: {{- toYaml $nodeSelector | nindent 12 }}
+          affinity: {{- toYaml $affinity | nindent 12 }}
+          tolerations: {{- toYaml $tolerations | nindent 12 }}
           serviceAccountName: {{ template "qmig.serviceAccountName" . }}
-          {{- with .Values.convs.affinity }}
-          affinity:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.convs.tolerations }}
-          tolerations:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- with .Values.convs.nodeSelector }}
-          nodeSelector:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
           containers:
             - name: {{ .Values.convs.name }}
               image: "{{ .Values.convs.image.repository }}:{{ .Values.convs.image.tag }}"
               imagePullPolicy: {{ .Values.convs.image.pullPolicy }}
+              securityContext: {{ $containerSecurityContext | nindent 16 }}
               resources:
                 {{- toYaml .Values.convs.resources | nindent 16 }}
-              {{- with .Values.convs.containerSecurityContext }}
-              securityContext:
-                {{- toYaml . | nindent 16 }}
-              {{- end }}
               env:
                 - name: POD_NAMESPACE
                   valueFrom:

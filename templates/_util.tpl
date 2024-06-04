@@ -11,5 +11,5 @@
 
 {{- define "utils.secret.getvalue" -}}
 {{- $varname := include "utils.fieldToEnvVar" . -}}
-export {{ $varname }}=$(kubectl get secret --namespace {{ include "qmig.namespace_plain" .context | quote }} {{ .secret }} -o jsonpath="{.data.{{ .field }}}" | base64 -d)
+export {{ $varname }}=$(kubectl get secret --namespace {{ include "qmig.namespace" .context | quote }} {{ .secret }} -o jsonpath="{.data.{{ .field }}}" | base64 -d)
 {{- end -}}

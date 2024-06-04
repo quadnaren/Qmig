@@ -1,3 +1,8 @@
+{{- $nodeSelector := .Values.app.nodeSelector }}
+{{- $affinity := .Values.app.affinity }}
+{{- $tolerations := .Values.app.tolerations }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.app) }}
+{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.app) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -11,7 +16,7 @@ metadata:
   {{- end }}
 spec:
   {{- if not .Values.app.autoscaling.enabled }}
-  replicas: {{ .Values.app.replicaCount }}
+  replicas: {{ .Values.app.replicas }}
   {{- end }}
   selector:
     matchLabels:
@@ -25,24 +30,12 @@ spec:
       labels:
         {{- include "qmig.app.selectorLabels" . | nindent 8 }}
     spec:
-      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.app.imagePullSecrets) | indent 6 -}}
-      {{- with .Values.app.securityContext }}
-      securityContext:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "qmig.dockerauthList" (list . .Values.app) | indent 6 }}
+      securityContext: {{ $securityContext | nindent 8 }}
+      nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
+      affinity: {{- toYaml $affinity | nindent 8 }}
+      tolerations: {{- toYaml $tolerations | nindent 8 }}
       serviceAccountName: {{ template "qmig.serviceAccountName" . }}
-      {{- with .Values.app.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.app.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.app.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       containers:
         - name: {{ .Values.app.name }}
           image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
@@ -51,12 +44,9 @@ spec:
             - name: {{ .Values.app.name }}-http
               containerPort: 4200
               protocol: TCP
+          securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.app.resources | nindent 12 }}
-          {{- with .Values.app.containerSecurityContext }}
-          securityContext:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
           env:
             - name: POD_NAMESPACE
               valueFrom:

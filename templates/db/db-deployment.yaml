@@ -1,3 +1,8 @@
+{{- $nodeSelector := .Values.db.nodeSelector }}
+{{- $affinity := .Values.db.affinity }}
+{{- $tolerations := .Values.db.tolerations }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.db) }}
+{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.db) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.db.fullname" .) "empty" -}}
 {{- $pvc := include "qmig.db.fullname" . -}}
 apiVersion: apps/v1
@@ -12,7 +17,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  replicas: {{ .Values.db.replicaCount }}
+  replicas: {{ .Values.db.replicas }}
   selector:
     matchLabels:
       {{- include "qmig.db.selectorLabels" . | nindent 6 }}
@@ -25,24 +30,12 @@ spec:
       labels:
         {{- include "qmig.db.selectorLabels" . | nindent 8 }}
     spec:
-      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.db.imagePullSecrets) | indent 6 -}}
-      {{- with .Values.db.securityContext }}
-      securityContext:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "qmig.dockerauthList" (list . .Values.db) | indent 6 }}
+      securityContext: {{ $securityContext | nindent 8 }}
+      nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
+      affinity: {{- toYaml $affinity | nindent 8 }}
+      tolerations: {{- toYaml $tolerations | nindent 8 }}
       serviceAccountName: {{ template "qmig.serviceAccountName" . }}
-      {{- with .Values.db.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.db.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.db.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       initContainers: 
       {{- include "qmig.db.load-db" (dict "Values" .Values "volumename" $pvcTemp ) | indent 8 }}
       containers:
@@ -53,12 +46,9 @@ spec:
             - name: {{ .Values.db.name }}-tcp
               containerPort: 5432
               protocol: TCP
+          securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.db.resources | nindent 12 }}
-          {{- with .Values.db.containerSecurityContext }}
-          securityContext:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
           env:
             - name: POD_NAMESPACE
               valueFrom:

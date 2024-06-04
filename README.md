@@ -23,6 +23,12 @@ helm install <name> qmigrator/qmig \
   --set imageCredentials.data.username="userxxxx" --set imageCredentials.data.password="passxxxx"
 ```
 
+## Enable Airflow DataMigration
+> You need to pass extra flag for enabling the airflow
+```
+  --set airflow.enabled=true --set airflow.secret.data.password="passxxxx"
+```
+
 ## Data Persistence
 - Qmigrator use shared volume for components like App, Engine & Others
 - While Metadata DB (Postgres) & Cache Component have their own
@@ -42,11 +48,25 @@ Use values.yaml from this repo, edit as required and use while installing Helm
 helm install <name> qmigrator/qmig -f values.yaml
 ```
 
+## Examples
+### Docker Desktop shared volume (Win)
+- Use on Docker Desktop Kubernetes, LocalPath as windows device path
+> See the example/pv-docker-desktop.yaml
+
+### Minikube shared volume (Linux, Win, MacOS etc.)
+- Mount the local path while starting minikube
+- eg. /hostpc on minikube points to {LOCAL_PATH} of device
+```
+minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
+```
+> See the example/pv-minikube.yaml
+
 ## Values.YAML
 ### Globals
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | nameOverride | String to partially override name template (will maintain the release name) | "" | 
+| clusterDomain | Kubernetes Cluster Domain | "cluster.local" | 
 | secret.secretName | Name for project secret | "" (name: qmig-secret) | 
 | secret.data.PROJECT_ID | ID of project | null | 
 | secret.data.PROJECT_NAME | Name of project | null | 
@@ -57,8 +77,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | imageCredentials.data.username | Username for given docker host | null | 
 | imageCredentials.data.password | Password for given docker host | null | 
 ### Shared Volume
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | shared.persistentVolume.enabled | If false, use emptyDir | true | 
 | shared.persistentVolume.accessModes | How should the volume accessible in App | ReadWriteMany | 
 | shared.persistentVolume.annotations | Persistent Volume Claim annotations | {} | 
@@ -71,8 +91,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | shared.folderPath.dagsSubpath | subpath for Dag's folder of airflow in a shared volume | "dags" | 
 | shared.folderPath.logsSubpath | subpath for logs folder of airflow in a shared volume | "logs" | 
 ### Ingress Controller
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | ingressController.enabled | Whether or not to install the ingressController | true | 
 | ingressController.controllerImage.repository | Ingress controller image repository | qmigrator.azurecr.io/ingress-nginx/controller | 
 | ingressController.controllerImage.tag | Ingress controller image tag/version | "v1.9.4" | 
@@ -80,18 +100,17 @@ helm install <name> qmigrator/qmig -f values.yaml
 | ingressController.webhookImage.tag | Ingress controller image tag/version | "v20231011-8b53cabe0" | 
 | ingressController.imagePullSecrets | Ingress Controller component pull secrets | {} | 
 ### Service Account
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | serviceAccount.create | Enable creation of ServiceAccount | true | 
 | serviceAccount.name | The name of the ServiceAccount to use | "" (name: qmig-opr) | 
 | serviceAccount.annotations | Additional custom annotations for the ServiceAccount | {} | 
 | rbac.create | Create Role and RoleBinding | true | 
 ### App Components
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | app.name | Name for App component | "app" | 
-| app.replicaCount | Number of App Components replicas | 1 | 
-| app.statefulSet.enabled | Deploy App as statefulset | false | 
+| app.replicas | Number of App Components replicas | 1 | 
 | app.image.repository | App component image repository | "qmigrator.azurecr.io/qubeapp" | 
 | app.image.tag | App component image tag/version | "q1002" | 
 | app.image.pullPolicy | App component pull policy | "IfNotPresent" | 
@@ -100,8 +119,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | app.livenessProbe.enabled | Enable livenessProbe on App Component containers | true | 
 | app.annotations | Add extra annotations to the App Component | {} | 
 | app.podAnnotations | Add extra Pod annotations to the App Component pods | {} | 
-| app.securityContext | Configure App Component Security Context | {} | 
-| app.containerSecurityContext | Configure App Component Container Security Context | {} | 
+| app.securityContext.pod | default security context for App Component pods | {} | 
+| app.securityContext.container | default security context for App Component containers | {} | 
 | app.tolerations | Tolerations for App Component pods assignment | {} | 
 | app.affinity | Affinity for App Component pods assignment (evaluated as a template) | {} | 
 | app.nodeSelector | Node labels for App Component pods assignment | {} | 
@@ -109,7 +128,7 @@ helm install <name> qmigrator/qmig -f values.yaml
 | app.service.type | App Component service type | ClusterIP | 
 | app.service.port | App Component service HTTP port | 4200 | 
 | app.ingress.enabled | Enable ingress record generation | true | 
-| ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
+| app.ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
 | app.ingress.annotations | Additional annotations for the Ingress resource | {} | 
 | app.ingress.host | Default host for the ingress record | "" | 
 | app.ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
@@ -120,11 +139,10 @@ helm install <name> qmigrator/qmig -f values.yaml
 | app.autoscaling.targetCPUUtilizationPercentage | Define the CPU target to trigger the scaling actions (utilization percentage) | 80 | 
 | app.autoscaling.targetMemoryUtilizationPercentage | Define the memory target to trigger the scaling actions (utilization percentage) | 80 | 
 ### Engine Components
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | eng.name | Name for Engine component | "eng" | 
-| eng.replicaCount | Number of Engine component replicas | 1 | 
-| eng.statefulSet.enabled | Deploy App as statefulset | false | 
+| eng.replicas | Number of Engine component replicas | 1 | 
 | eng.image.repository | Engine component image repository | "qmigrator.azurecr.io/qubeeng" | 
 | eng.image.tag | Engine component image tag/version | "q836" | 
 | eng.image.pullPolicy | Engine component pull policy | "IfNotPresent" | 
@@ -133,8 +151,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | eng.livenessProbe.enabled | Enable livenessProbe on Engine component containers | true | 
 | eng.annotations | Add extra annotations to the Engine component | {} | 
 | eng.podAnnotations | Add extra Pod annotations to the Engine component pods | {} | 
-| eng.securityContext | Configure Engine component Security Context | {} | 
-| eng.containerSecurityContext | Configure Engine component Container Security Context | {} | 
+| eng.securityContext.pod | default security context for Engine component pods | {} | 
+| eng.securityContext.container | default security context for Engine component containers | {} | 
 | eng.tolerations | Tolerations for Engine component pods assignment | {} | 
 | eng.affinity | Affinity for Engine component pods assignment (evaluated as a template) | {} | 
 | eng.nodeSelector | Node labels for Engine component pods assignment | {} | 
@@ -142,9 +160,9 @@ helm install <name> qmigrator/qmig -f values.yaml
 | eng.service.type | Engine component service type | ClusterIP | 
 | eng.service.port | Engine component service HTTP port | 8080 | 
 | eng.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Engine component pods | [] | 
-| extraVolumes | Optionally specify an extra list of additional volumes for all the Engine component pods | [] | 
+| eng.extraVolumes | Optionally specify an extra list of additional volumes for all the Engine component pods | [] | 
 | eng.ingress.enabled | Enable ingress record generation | true | 
-| ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
+| eng.ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
 | eng.ingress.annotations | Additional annotations for the Ingress resource | {} | 
 | eng.ingress.host | Default host for the ingress record | "" | 
 | eng.ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
@@ -156,12 +174,11 @@ helm install <name> qmigrator/qmig -f values.yaml
 | eng.autoscaling.targetMemoryUtilizationPercentage | Define the memory target to trigger the scaling actions (utilization percentage) | 80 | 
 | eng.env | Add extra environment variables for the Engine component pods | [] | 
 | eng.envSecret | List of secrets with extra environment variables for all the component pods | [] | 
-### Metadata DB
-| Property | Description | Default |
-| :--- | :--- | :--- |
+### Metadata Database
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | db.name | Name for DB component | "db" | 
-| db.replicaCount | Number of DB component replicas | 1 | 
-| db.statefulSet.enabled | Deploy App as statefulset | false | 
+| db.replicas | Number of DB component replicas | 1 | 
 | db.image.repository | DB component image repository | "postgres" (hub.docker.com) | 
 | db.image.tag | DB component image tag/version | "14.2" | 
 | db.image.pullPolicy | DB component pull policy | "IfNotPresent" | 
@@ -169,8 +186,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | db.dbshConfig.stringOverride | Override shell script to be run on the initial time of DB | "" | 
 | db.annotations | Add extra annotations to the DB component | {} | 
 | db.podAnnotations | Add extra Pod annotations to the DB component pods | {} | 
-| db.securityContext | Configure DB component Security Context | {} | 
-| db.containerSecurityContext | Configure DB component Container Security Context | {} | 
+| db.securityContext.pod | default security context for DB Component pods | {} | 
+| db.securityContext.container | default security context for DB Component containers | {} | 
 | db.tolerations | Tolerations for DB component pods assignment | {} | 
 | db.affinity | Affinity for DB component pods assignment (evaluated as a template) | {} | 
 | db.nodeSelector | Node labels for DB component pods assignment | {} | 
@@ -197,18 +214,17 @@ helm install <name> qmigrator/qmig -f values.yaml
 | Property | Description | Default |
 | :--- | :--- | :--- |
 | msg.name | Name for Cache component | "msg" | 
-| msg.replicaCount | Number of Cache component replicas | 1 | 
-| msg.statefulSet.enabled | Deploy App as statefulset | false | 
+| msg.replicas | Number of Cache component replicas | 1 | 
 | msg.image.repository | Cache component image repository | "eqalpha/keydb" | 
 | msg.image.tag | Cache component image tag/version | "x86_64_v6.3.4" | 
 | msg.image.pullPolicy | Cache component pull policy | IfNotPresent | 
 | msg.imagePullSecrets | Cache component pull secrets | {} | 
-| msg.args | Args to override Cache component containers in the the deployment(s)/statefulset(s) | [] | 
+| msg.args | Args to override Cache component containers | [] | 
 | msg.keyDBConfig.stringOverride | Override shell script to be run on the initial time of Cache | "" | 
 | msg.annotations | Add extra annotations to the Cache component | {} | 
 | msg.podAnnotations | Add extra Pod annotations to the Cache component pods | {} | 
-| msg.securityContext | Configure Cache component Security Context | {} | 
-| msg.containerSecurityContext | Configure Cache component Container Security Context | {} | 
+| msg.securityContext.pod | default security context for Cache Component pods | {} | 
+| msg.securityContext.container | default security context for Cache Component containers | {} | 
 | msg.tolerations | Tolerations for Cache component pods assignment | {} | 
 | msg.affinity | Affinity for Cache component pods assignment (evaluated as a template) | {} | 
 | msg.nodeSelector | Node labels for Cache component pods assignment | {} | 
@@ -240,8 +256,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | asses.imagePullSecrets | Assessment pull secrets | {} | 
 | asses.annotations | Add extra annotations to the Assessment | {} | 
 | asses.podAnnotations | Add extra Pod annotations to the Assessment pods | {} | 
-| asses.securityContext | Configure Assessment Security Context | {} | 
-| asses.containerSecurityContext | Configure Assessment Container Security Context | {} | 
+| asses.securityContext.pod | default security context for Assessment pods | {} | 
+| asses.securityContext.container | default security context for Assessment containers | {} | 
 | asses.tolerations | Tolerations for Assessment pods assignment | {} | 
 | asses.affinity | Affinity for Assessment pods assignment (evaluated as a template) | {} | 
 | asses.nodeSelector | Node labels for Assessment pods assignment | {} | 
@@ -268,8 +284,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | convs.imagePullSecrets | Conversion pull secrets | {} | 
 | convs.annotations | Add extra annotations to the Conversion | {} | 
 | convs.podAnnotations | Add extra Pod annotations to the Conversion pods | {} | 
-| convs.securityContext | Configure Conversion Security Context | {} |
-| convs.containerSecurityContext | Configure Conversion Container Security Context | {} | 
+| convs.securityContext.pod | default security context for Conversion pods | {} | 
+| convs.securityContext.container | default security context for Conversion containers | {} | 
 | convs.tolerations | Tolerations for Conversion pods assignment | {} | 
 | convs.affinity | Affinity for Conversion pods assignment (evaluated as a template) | {} | 
 | convs.nodeSelector | Node labels for Conversion pods assignment | {} | 
@@ -296,8 +312,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | migrt.imagePullSecrets | Migration pull secrets | {} | 
 | migrt.annotations | Add extra annotations to the Migration | {} | 
 | migrt.podAnnotations | Add extra Pod annotations to the Migration pods | {} | 
-| migrt.securityContext | Configure Migration Security Context | {} | 
-| migrt.containerSecurityContext | Configure Migration Container Security Context | {} | 
+| migrt.securityContext.pod | default security context for Migration pods | {} | 
+| migrt.securityContext.container | default security context for Migration containers | {} | 
 | migrt.tolerations | Tolerations for Migration pods assignment | {} | 
 | migrt.affinity | Affinity for Migration pods assignment (evaluated as a template) | {} | 
 | migrt.nodeSelector | Node labels for Migration pods assignment | {} | 
@@ -324,8 +340,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | tests.imagePullSecrets | Testing pull secrets | {} | 
 | tests.annotations | Add extra annotations to the Testing | {} | 
 | tests.podAnnotations | Add extra Pod annotations to the Testing pods | {} | 
-| tests.securityContext | Configure Testing Security Context | {} | 
-| tests.containerSecurityContext | Configure Testing Container Security Context | {} | 
+| tests.securityContext.pod | default security context for Testing pods | {} | 
+| tests.securityContext.container | default security context for Testing containers | {} | 
 | tests.tolerations | Tolerations for Testing pods assignment | {} | 
 | tests.affinity | Affinity for Testing pods assignment (evaluated as a template) | {} | 
 | tests.nodeSelector | Node labels for Testing pods assignment | {} | 
@@ -352,8 +368,8 @@ helm install <name> qmigrator/qmig -f values.yaml
 | perfs.imagePullSecrets | Performance pull secrets | {} | 
 | perfs.annotations | Add extra annotations to the Performance | {} | 
 | perfs.podAnnotations | Add extra Pod annotations to the Performance pods | {} | 
-| perfs.securityContext | Configure Performance Security Context | {} | 
-| perfs.containerSecurityContext | Configure Performance Container Security Context | {} | 
+| perfs.securityContext.pod | default security context for Performance pods | {} | 
+| perfs.securityContext.container | default security context for Performance containers | {} | 
 | perfs.tolerations | Tolerations for Performance pods assignment | {} | 
 | perfs.affinity | Affinity for Performance pods assignment (evaluated as a template) | {} | 
 | perfs.nodeSelector | Node labels for Performance pods assignment | {} | 
@@ -370,16 +386,89 @@ helm install <name> qmigrator/qmig -f values.yaml
 | perfs.envSecret | List of secrets with extra environment variables for all the component pods | [] | 
 | perfs.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Performance pods | [] | 
 | perfs.extraVolumes | Optionally specify an extra list of additional volumes for the all the Performance pods | [] | 
-
-## Examples
-### Docker Desktop shared volume (Win)
-- Use on Docker Desktop Kubernetes, LocalPath as windows device path
-> See the example/pv-docker-desktop.yaml
-
-### Minikube shared volume (Linux, Win, MacOS etc.)
-- Mount the local path while starting minikube
-- eg. /hostpc on minikube points to {LOCAL_PATH} of device
-``
-minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
-``
-> See the example/pv-minikube.yaml
+### Airflow
+| Property | Description | Default |
+| :--- | :--- | :--- |
+| airflow.enabled | Name for Airflow | false | 
+| airflow.name | Name for Airflow | "airflow" | 
+| airflow.uid | User id for Airflow | "106665" | 
+| airflow.gid | group id for Airflow | "106966" | 
+| airflow.image.repository | Airflow image repository | "qmigrator.azurecr.io/qmigair" | 
+| airflow.image.tag | Airflow image tag/version | "2.8.4-ofjv-lvs" | 
+| airflow.image.pullPolicy | Airflow pull policy | "IfNotPresent" | 
+| airflow.imagePullSecrets | Airflow pull secrets | {} | 
+| airflow.rbac.create | Create Role and RoleBinding | true | 
+| airflow.baseUrl | Base URL of Airflow Webserver | http://0.0.0.0:8080/airflow | 
+| airflow.config | Config settings to go into the mounted airflow.cfg | | 
+| airflow.airflowLocalSettings | file as a string (can be templated) | ~ | 
+| airflow.podTemplate | is a templated string containing the contents of `pod_template_file.yaml` used for KubernetesExecutor workers | ~ | 
+| airflow.webserverConfig | string (can be templated) will be mounted into the Airflow Webserver | ~ | 
+| airflow.securityContexts.pod | Detailed default security context for Airflow Pods | {} | 
+| airflow.securityContexts.pod | Detailed default security context for Airflow Container | {} | 
+| airflow.tolerations | Tolerations for Airflow pods | {} | 
+| airflow.affinity | Affinity for Airflow pods (evaluated as a template) | {} | 
+| airflow.nodeSelector | Node labels for Airflow pods | {} | 
+| airflow.webserver.replicas | Number of Airflow Webserver replicas | 1 | 
+| airflow.webserver.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
+| airflow.webserver.annotations | Add extra annotations to the Airflow Webserver | {} | 
+| airflow.webserver.podAnnotations | Add extra Pod annotations to the Airflow Webserver pods | {} | 
+| airflow.webserver.securityContext.pod | default security context for Webserver pods | {} | 
+| airflow.webserver.securityContext.container | default security context for Webserver containers | {} | 
+| airflow.webserver.livenessProbe | livenessProbe on Airflow webserver | 
+| airflow.webserver.readinessProbe | readinessProbe on Airflow webserver | 
+| airflow.webserver.startupProbe | startupProbe on Airflow webserver | 
+| airflow.webserver.command | Command to use when running the Airflow webserver | {} | 
+| airflow.webserver.args | Args to use when running the Airflow webserver | ["bash", "-c", "exec airflow webserver"] | 
+| airflow.webserver.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+| airflow.webserver.service.annotations | Additional custom annotations for Airflow Webserver service | {} | 
+| airflow.webserver.service.type | Airflow Webserver service type | "ClusterIP" | 
+| airflow.webserver.service.port | Airflow Webserver service HTTP port | 8080 | 
+| airflow.scheduler.replicas | Number of Airflow Scheduler replicas | 1 | 
+| airflow.scheduler.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
+| airflow.scheduler.annotations | Add extra annotations to the Airflow Scheduler | {} | 
+| airflow.scheduler.podAnnotations | Add extra Pod annotations to the Airflow Scheduler pods | {} | 
+| airflow.scheduler.securityContext.pod | default security context for Scheduler pods | {} | 
+| airflow.scheduler.securityContext.container | default security context for Scheduler containers | {} | 
+| airflow.scheduler.livenessProbe | livenessProbe on Airflow Scheduler | 
+| airflow.scheduler.readinessProbe | readinessProbe on Airflow Scheduler | 
+| airflow.scheduler.startupProbe | startupProbe on Airflow Scheduler | 
+| airflow.scheduler.command | Command to use when running the Airflow scheduler | ~ | 
+| airflow.scheduler.args | Args to use when running the Airflow scheduler | ["bash", "-c", "exec airflow scheduler"] | 
+| airflow.scheduler.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+| airflow.worker.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
+| airflow.worker.annotations | Add extra annotations to the Airflow Worker | {} | 
+| airflow.worker.podAnnotations | Add extra Pod annotations to the Airflow Worker pods | {} | 
+| airflow.worker.securityContext.pod | default security context for Worker pods | {} | 
+| airflow.worker.securityContext.container | default security context for Worker containers | {} | 
+| airflow.worker.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+| airflow.waitForMigrations.enabled | Whether to create init container to wait for db migrations | true | 
+| airflow.waitForMigrations.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
+| airflow.waitForMigrations.annotations | Add extra annotations to the waitForMigrations | {} | 
+| airflow.waitForMigrations.podAnnotations | Add extra Pod annotations to the waitForMigrations pods | {} | 
+| airflow.waitForMigrations.securityContext.container | default security context for waitForMigrations containers | {} | 
+| airflow.waitForMigrations.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+| airflow.createUserJob.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
+| airflow.createUserJob.annotations | Add extra annotations to the createUserJob | {} | 
+| airflow.createUserJob.podAnnotations | Add extra Pod annotations to the createUserJob pods | {} | 
+| airflow.createUserJob.securityContext.pod | default security context for createUserJob pods | {} | 
+| airflow.createUserJob.securityContext.container | default security context for createUserJob containers | {} | 
+| airflow.createUserJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+| airflow.migrateDatabaseJob.enabled | Whether to create init container to wait for db migrations | true | 
+| airflow.migrateDatabaseJob.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
+| airflow.migrateDatabaseJob.annotations | Add extra annotations to the migrateDatabaseJob | {} | 
+| airflow.migrateDatabaseJob.podAnnotations | Add extra Pod annotations to the migrateDatabaseJob pods | {} | 
+| airflow.migrateDatabaseJob.securityContext.pod | default security context for migrateDatabaseJob pods | {} | 
+| airflow.migrateDatabaseJob.securityContext.container | default security context for migrateDatabaseJob containers | {} | 
+| airflow.migrateDatabaseJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
+| airflow.ingress.enabled | Enable ingress record generation | true | 
+| airflow.ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
+| airflow.ingress.annotations | Additional annotations for the Ingress resource | {} | 
+| airflow.ingress.host | Default host for the ingress record | "" | 
+| airflow.ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
+| airflow.env | Add extra environment variables for the Airflow pods | [] | 
+| airflow.envSecret | List of secrets with extra environment variables for all the component pods | [] | 
+| airflow.secret.secretName | Name for project secret | "" (name: qmig-air-secret) | 
+| airflow.secret.data.airflow_secret_key | Random generated key for webserver | null | 
+| airflow.secret.data.airflow_fernet_key | Random generated key for airflow | null | 
+| airflow.secret.data.airflow_password | Airflow login password | null | 
+| airflow.secret.data.connection | Connection string for Airflow metadta DB | null | 

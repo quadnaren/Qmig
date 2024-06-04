@@ -1,3 +1,8 @@
+{{- $nodeSelector := .Values.msg.nodeSelector }}
+{{- $affinity := .Values.msg.affinity }}
+{{- $tolerations := .Values.msg.tolerations }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.msg) }}
+{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.msg) }}
 {{- $pvcConf := printf "%s-%s" (include "qmig.msg.fullname" .) "config" -}}
 {{- $pvc := include "qmig.msg.fullname" . -}}
 apiVersion: apps/v1
@@ -12,7 +17,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  replicas: {{ .Values.msg.replicaCount }}
+  replicas: {{ .Values.msg.replicas }}
   selector:
     matchLabels:
       {{- include "qmig.msg.selectorLabels" . | nindent 6 }}
@@ -29,23 +34,11 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.msg.securityContext }}
-      securityContext:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      securityContext: {{ $securityContext | nindent 8 }}
+      nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
+      affinity: {{- toYaml $affinity | nindent 8 }}
+      tolerations: {{- toYaml $tolerations | nindent 8 }}
       serviceAccountName: {{ template "qmig.serviceAccountName" . }}
-      {{- with .Values.msg.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.msg.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.msg.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       containers:
         - name: {{ .Values.msg.name }}
           image: "{{ .Values.msg.image.repository }}:{{ .Values.msg.image.tag }}"
@@ -54,6 +47,7 @@ spec:
             - name: {{ .Values.msg.name }}-tcp
               containerPort: 6379
               protocol: TCP
+          securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.msg.resources | nindent 12 }}
           args:
@@ -66,10 +60,6 @@ spec:
           {{- range . }}
             - {{ . | quote }}
           {{- end }}
-          {{- end }}
-          {{- with .Values.msg.containerSecurityContext }}
-          securityContext:
-            {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
             - name: POD_NAMESPACE

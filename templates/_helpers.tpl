@@ -31,30 +31,11 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Return the appropriate apiVersion for deployment.
-*/}}
-{{- define "qmig.deployment.apiVersion" -}}
-{{- if semverCompare "<1.9-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "extensions/v1beta1" -}}
-{{- else if semverCompare "^1.9-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "apps/v1" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Define the qmig.namespace template if set with forceNamespace or .Release.Namespace is set
 */}}
 {{- define "qmig.namespace" -}}
-{{ printf "namespace: %s" .Release.Namespace }}
-{{- end -}}
-
-{{/*
-Define the qmig.namespace template if set with forceNamespace or .Release.Namespace is set
-*/}}
-{{- define "qmig.namespace_plain" -}}
 {{ printf "%s" .Release.Namespace }}
 {{- end -}}
-
 
 {{/*
 Endpoint specification for s3
@@ -63,19 +44,11 @@ Endpoint specification for s3
 {{- printf "https://s3.%s.amazonaws.com" .Values.aws.s3.region | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-
-{{/*
-Cloud specification
-*/}}
-{{- define "qmig.cloud" -}}
-{{- printf "%s" .Values.cloud | default "azure" -}}
-{{- end -}}
-
 {{/*
 Secret specification
 */}}
 {{- define "qmig.secret" -}}
-{{- printf "%s" .Values.secret.secretName | default "qmig-secret" -}}
+{{- printf "%s" .Values.secret.secretName | default  (printf "%s-secret" .Release.Name)  -}}
 {{- end -}}
 
 {{/*
@@ -83,19 +56,12 @@ Construct the name of the ServiceAccount.
 */}}
 {{- define "qmig.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
-{{- .Values.serviceAccount.name | default "qmig-opr" -}}
+{{- printf "%s" .Values.serviceAccount.name | default  (printf "%s-operator" .Release.Name) -}}
 {{- else -}}
 {{- .Values.serviceAccount.name | default "default" -}}
 {{- end -}}
 {{- end -}}
 
-{{/*
-Ingress controller specification
-*/}}
-{{- define "qmig.controller.ingressType" -}}
-{{- $name := default "external" .Values.controller.ingressType -}}
-{{- printf "%s" $name -}}
-{{- end -}}
 
 {{/*
 All specification for app module
@@ -162,7 +128,7 @@ component: {{ .Values.eng.name | quote }}
 
 {{- define "qmig.eng.volumeMounts" }}
 - mountPath: /mnt/eng
-  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  {{- if .Values.shared.persistentVolume.subPath }}
   subPath: {{ .Values.shared.persistentVolume.subPath | quote }}
   {{- end }}
   name: {{ .pvcname }}
@@ -237,7 +203,7 @@ component: {{ .Values.db.name | quote }}
 - mountPath: /docker-entrypoint-initdb.d
   name: sqlconfig-sh
 - mountPath: /var/lib/postgresql/data
-  {{- if and .Values.db.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  {{- if .Values.db.persistentVolume.subPath }}
   subPath: {{ .Values.db.persistentVolume.subPath | quote }}
   {{- end }}
   name: {{ .pvcname }}
@@ -327,7 +293,7 @@ component: {{ .Values.asses.name | quote }}
 
 {{- define "qmig.asses.volumeMounts" }}
 - mountPath: /mnt/pypod
-  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  {{- if .Values.shared.persistentVolume.subPath }}
   subPath: {{ .Values.shared.persistentVolume.subPath }}
   {{- end }}
   name: {{ .pvcname }}
@@ -359,7 +325,7 @@ component: {{ .Values.convs.name | quote }}
 
 {{- define "qmig.convs.volumeMounts" }}
 - mountPath: /mnt/pypod
-  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  {{- if .Values.shared.persistentVolume.subPath }}
   subPath: {{ .Values.shared.persistentVolume.subPath }}
   {{- end }}
   name: {{ .pvcname }}
@@ -390,7 +356,7 @@ component: {{ .Values.migrt.name | quote }}
 
 {{- define "qmig.migrt.volumeMounts" }}
 - mountPath: /mnt/pypod
-  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  {{- if .Values.shared.persistentVolume.subPath }}
   subPath: {{ .Values.shared.persistentVolume.subPath }}
   {{- end }}
   name: {{ .pvcname }}
@@ -427,7 +393,7 @@ component: {{ .Values.tests.name | quote }}
 
 {{- define "qmig.tests.volumeMounts" }}
 - mountPath: /mnt/pypod
-  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  {{- if .Values.shared.persistentVolume.subPath }}
   subPath: {{ .Values.shared.persistentVolume.subPath }}
   {{- end }}
   name: {{ .pvcname }}
@@ -460,7 +426,7 @@ component: {{ .Values.perfs.name | quote }}
 
 {{- define "qmig.perfs.volumeMounts" }}
 - mountPath: /mnt/pypod
-  {{- if and .Values.shared.persistentVolume.subPath (ne (include "qmig.cloud" .) "minikube") }}
+  {{- if .Values.shared.persistentVolume.subPath }}
   subPath: {{ .Values.shared.persistentVolume.subPath }}
   {{- end }}
   name: {{ .pvcname }}
@@ -471,36 +437,6 @@ component: {{ .Values.perfs.name | quote }}
   subPath: "tmp"
   name: {{ .pvctemp }}
 {{- end }}
-
-{{/*
-All specification for CSI
-*/}}
-{{- define "qmig.diskCSI.parameters" -}}
-{{- if eq "aws" .Values.cloud -}}
-parameters:
-  type: gp2
-  fsType: ext4
-{{- else if eq "gcp" .Values.cloud  -}}
-parameters:
-  type: pd-balanced
-{{- else if eq "azure" .Values.cloud   -}}
-parameters:
-  skuName: "StandardSSD_ZRS"
-{{- end -}}
-{{- end -}}
-
-{{/*
-All specification for CSI
-*/}}
-{{- define "qmig.diskCSI.provisioner" -}}
-{{- if eq "aws" .Values.cloud -}}
-{{- printf "%s" "ebs.csi.aws.com" | quote | trimSuffix "-" -}}
-{{- else if eq "gcp" .Values.cloud -}}
-{{- printf "%s" "pd.csi.storage.gke.io" | quote | trimSuffix "-" -}}
-{{- else if eq "azure" .Values.cloud -}}
-{{- printf "%s" "disk.csi.azure.com" | quote | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
 
 
 {{/*
@@ -527,10 +463,10 @@ All specification for PVC
 {{- end }}
 
 {{/*
-Docker specification
+Docker credentails specification
 */}}
 {{- define "qmig.dockerauth" -}}
-{{- printf "%s" .Values.imageCredentials.secretName | default "qmig-docker" -}}
+{{- printf "%s" $.Values.imageCredentials.secretName | default  (printf "%s-docker" $.Release.Name) -}}
 {{- end -}}
 
 {{- define "qmig.dockerSecret" }}
@@ -538,9 +474,11 @@ Docker specification
 {{- end }}
 
 {{- define "qmig.dockerauthList" -}}
+  {{- $ := index . 0 -}}
   {{- $pullSecrets := list }}
-  {{- $pullSecrets = append $pullSecrets (include "qmig.dockerauth" .) -}}
-  {{- range .imagePullSecrets -}}
+  {{- $pullSecrets = append $pullSecrets (include "qmig.dockerauth" $ ) -}}
+  {{- with index . 1 }}
+    {{- range .imagePullSecrets -}}
     {{- if kindIs "map" . -}}
       {{- $pullSecrets = append $pullSecrets .name -}}
     {{- else -}}
@@ -553,8 +491,8 @@ imagePullSecrets:
   - name: {{ . }}
     {{- end }}
   {{- end }}
+  {{- end -}}
 {{- end -}}
-
 
 {{/*
 All specification for airflow
@@ -582,7 +520,7 @@ main: {{ .Values.airflow.name | quote }}
 {{- end -}}
 
 {{- define "qmig.airflow.secret" -}}
-{{- printf "%s" .Values.airflow.secret.secretName | default "qmig-air-secret" -}}
+{{- printf "%s" .Values.airflow.secret.secretName | default (printf "%s-air-secret" .Release.Name) -}}
 {{- end -}}
 
 {{- define "qmig.airflow.home" -}}
@@ -660,7 +598,7 @@ main: {{ .Values.airflow.name | quote }}
 {{- end }}
 
 {{- define "qmig.airflow.dataMounts" }}
-{{- include "qmig.airflow.volumeMounts" (dict "Values" .Values "pvcname" .pvcname "pvctemp" .pvctemp )  }}
+{{- include "qmig.airflow.volumeMounts" (dict "pvcname" .pvcname "pvctemp" .pvctemp )  }}
 - name: {{ .pvcname }}
   mountPath: /opt/airflow/dags
   subPath: dags
@@ -678,14 +616,13 @@ All specification for PVC
     name: {{ include "qmig.airflow.config" . }}
 {{- end }}
 
-
 {{- define "containerSecurityContext" -}}
   {{- $ := index . 0 -}}
   {{- with index . 1 }}
     {{- if .securityContexts.container -}}
       {{ toYaml .securityContexts.container | print }}
-    {{- else if $.Values.airflow.securityContexts.containers -}}
-      {{ toYaml $.Values.airflow.securityContexts.containers | print }}
+    {{- else if $.Values.airflow.securityContexts.container -}}
+      {{ toYaml $.Values.airflow.securityContexts.container | print }}
     {{- else -}}
 allowPrivilegeEscalation: false
 capabilities:
@@ -696,7 +633,7 @@ capabilities:
 {{- end -}}
 
 
-{{- define "airflowPodSecurityContext" -}}
+{{- define "podSecurityContext" -}}
   {{- $ := index . 0 -}}
   {{- with index . 1 }}
     {{- if .securityContexts.pod -}}
@@ -704,8 +641,7 @@ capabilities:
     {{- else if $.Values.airflow.securityContexts.pod -}}
       {{ toYaml $.Values.airflow.securityContexts.pod | print }}
     {{- else -}}
-runAsUser: {{ $.Values.airflow.uid }}
-fsGroup: {{ $.Values.airflow.gid }}
+      {}
     {{- end }}
   {{- end }}
 {{- end }}

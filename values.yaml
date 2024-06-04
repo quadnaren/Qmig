@@ -132,17 +132,14 @@ rbac:
 
 ## App component
 ## @param app.name Name for App component Default: "app"
-## @param app.replicaCount Number of App Components replicas Default: 1
-## @param app.statefulSet.enabled Deploy App as statefulset Default: false
+## @param app.replicas Number of App Components replicas Default: 1
 ## @param app.image.repository App component image repository Default: "qmigrator.azurecr.io/qubeapp"
 ## @param app.image.tag App component image tag/version Default: "q1002"
 ## @param app.image.pullPolicy App component pull policy Default: "IfNotPresent"
 ## @param app.imagePullSecrets App component pull secrets Default: {}
 app:
   name: "app"
-  replicaCount: 1
-  statefulSet:
-    enabled: false
+  replicas: 1
   image:
     repository: qmigrator.azurecr.io/qubeapp
     pullPolicy: IfNotPresent
@@ -166,12 +163,12 @@ app:
   annotations: {}
   ## @param app.podAnnotations Add extra Pod annotations to the App Component pods Default: {}
   podAnnotations: {}
-  ## @param app.securityContext Configure App Component Security Context Default: {}
+  ## @param app.securityContext.pod default security context for App Component pods Default: {}
+  ## @param app.securityContext.container default security context for App Component containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param app.containerSecurityContext Configure App Component Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ 
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param app.tolerations Tolerations for App Component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -196,7 +193,7 @@ app:
   ingress:
     ## @param app.ingress.enabled Enable ingress record generation Default: true
     enabled: true
-    ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
+    ## @param app.ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
     ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
     ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
     className: ""
@@ -237,23 +234,20 @@ app:
 
 ## Engine component
 ## @param eng.name Name for Engine component Default: "eng"
-## @param eng.replicaCount Number of Engine component replicas Default: 1
-## @param eng.statefulSet.enabled Deploy App as statefulset Default: false
+## @param eng.replicas Number of Engine component replicas Default: 1
 ## @param eng.image.repository Engine component image repository Default: "qmigrator.azurecr.io/qubeeng"
 ## @param eng.image.tag Engine component image tag/version Default: "q836"
 ## @param eng.image.pullPolicy Engine component pull policy Default: "IfNotPresent"
 ## @param eng.imagePullSecrets Engine component pull secrets Default: {}
 eng:
   name: "eng"
-  replicaCount: 1
-  statefulSet:
-    enabled: false
+  replicas: 1
   image:
     repository: qmigrator.azurecr.io/qubeeng
     pullPolicy: IfNotPresent
     tag: "q836"
 
-  imagePullSecrets: {}
+  imagePullSecrets: 
 
   ## Configure extra options for Engine component containers' liveness and readiness
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
@@ -271,12 +265,12 @@ eng:
   annotations: {}
   ## @param eng.podAnnotations Add extra Pod annotations to the Engine component pods Default: {}
   podAnnotations: {}
-  ## @param eng.securityContext Configure Engine component Security Context Default: {}
+  ## @param eng.securityContext.pod default security context for Engine component pods Default: {}
+  ## @param eng.securityContext.container default security context for Engine component containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param eng.containerSecurityContext Configure Engine component Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param eng.tolerations Tolerations for Engine component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -298,7 +292,7 @@ eng:
  
   ## @param eng.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Engine component pods Default: []
   extraVolumeMounts: []
-  ## @param extraVolumes Optionally specify an extra list of additional volumes for all the Engine component pods Default: []
+  ## @param emg.extraVolumes Optionally specify an extra list of additional volumes for all the Engine component pods Default: []
   extraVolumes: []
 
   ## Engine component ingress parameters
@@ -306,7 +300,7 @@ eng:
   ingress:
     ## @param eng.ingress.enabled Enable ingress record generation Default: true
     enabled: true
-    ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
+    ## @param eng.ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
     ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
     ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
     className: ""
@@ -351,7 +345,7 @@ eng:
   ##  ENV_NAME: ENV_VALUE
   env: []
 
-  ## @param eng.envSecret List of secrets with extra environment variables for all the component pods Default: [airflow-password]
+  ## @param eng.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -361,17 +355,14 @@ eng:
 
 ## Metadata DB component
 ## @param db.name Name for DB component Default: "db"
-## @param db.replicaCount Number of DB component replicas Default: 1
-## @param db.statefulSet.enabled Deploy App as statefulset Default: false
+## @param db.replicas Number of DB component replicas Default: 1
 ## @param db.image.repository DB component image repository Default: "postgres" (hub.docker.com)
 ## @param db.image.tag DB component image tag/version Default: "14.2"
 ## @param db.image.pullPolicy DB component pull policy Default: "IfNotPresent"
 ## @param db.imagePullSecrets DB component pull secrets Default: {}
 db:
   name: "db"
-  replicaCount: 1
-  statefulSet:
-    enabled: false
+  replicas: 1
   image:
     repository: postgres
     pullPolicy: IfNotPresent
@@ -391,12 +382,12 @@ db:
   annotations: {}
   ## @param db.podAnnotations Add extra Pod annotations to the DB component pods Default: {}
   podAnnotations: {}
-  ## @param db.securityContext Configure DB component Security Context Default: {}
+  ## @param db.securityContext.pod default security context for DB Component pods Default: {}
+  ## @param db.securityContext.container default security context for DB Component containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param db.containerSecurityContext Configure DB component Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param db.tolerations Tolerations for DB component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -510,17 +501,14 @@ db:
 
 ## Cache component
 ## @param msg.name Name for Cache component Default: "msg"
-## @param msg.replicaCount Number of Cache component replicas Default: 1
-## @param msg.statefulSet.enabled Deploy App as statefulset Default: false
+## @param msg.replicas Number of Cache component replicas Default: 1
 ## @param msg.image.repository Cache component image repository Default: "eqalpha/keydb"
 ## @param msg.image.tag Cache component image tag/version Default: "x86_64_v6.3.4"
 ## @param msg.image.pullPolicy Cache component pull policy Default: IfNotPresent
 ## @param msg.imagePullSecrets Cache component pull secrets Default: {}
 msg:
   name: "msg"
-  replicaCount: 1
-  statefulSet:
-    enabled: false
+  replicas: 1
   image:
     repository: eqalpha/keydb
     pullPolicy: IfNotPresent
@@ -528,7 +516,7 @@ msg:
 
   imagePullSecrets: {}
 
-  ## @param msg.args Args to override Cache component containers in the the deployment(s)/statefulset(s) Default: []
+  ## @param msg.args Args to override Cache component containers Default: []
   args: []
 
   ## @param msg.keyDBConfig.stringOverride Override shell script to be run on the initial time of Cache Default: ""
@@ -543,12 +531,12 @@ msg:
   annotations: {}
   ## @param msg.podAnnotations Add extra Pod annotations to the Cache component pods Default: {}
   podAnnotations: {}
-  ## @param msg.securityContext Configure Cache component Security Context Default: {}
+  ## @param msg.securityContext.pod default security context for Cache Component pods Default: {}
+  ## @param msg.securityContext.container default security context for Cache Component containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param msg.containerSecurityContext Configure Cache component Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param msg.tolerations Tolerations for Cache component pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -671,12 +659,12 @@ asses:
   annotations: {}
   ## @param asses.podAnnotations Add extra Pod annotations to the Assessment pods Default: {}
   podAnnotations: {}
-  ## @param asses.securityContext Configure Assessment Security Context Default: {}
+  ## @param asses.securityContext.pod default security context for Assessment pods Default: {}
+  ## @param asses.securityContext.container default security context for Assessment containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param asses.containerSecurityContext Configure Assessment Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param asses.tolerations Tolerations for Assessment pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -751,12 +739,12 @@ convs:
   annotations: {}
   ## @param convs.podAnnotations Add extra Pod annotations to the Conversion pods Default: {}
   podAnnotations: {}
-  ## @param convs.securityContext Configure Conversion Security Context Default: {}
+  ## @param convs.securityContext.pod default security context for Conversion pods Default: {}
+  ## @param convs.securityContext.container default security context for Conversion containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param convs.containerSecurityContext Configure Conversion Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param convs.tolerations Tolerations for Conversion pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -832,12 +820,12 @@ migrt:
   annotations: {}
   ## @param migrt.podAnnotations Add extra Pod annotations to the Migration pods Default: {}
   podAnnotations: {}
-  ## @param migrt.securityContext Configure Migration Security Context Default: {}
+  ## @param migrt.securityContext.pod default security context for Migration pods Default: {}
+  ## @param migrt.securityContext.container default security context for Migration containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param migrt.containerSecurityContext Configure Migration Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param migrt.tolerations Tolerations for Migration pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -913,12 +901,12 @@ tests:
   annotations: {}
   ## @param tests.podAnnotations Add extra Pod annotations to the Testing pods Default: {}
   podAnnotations: {}
-  ## @param tests.securityContext Configure Testing Security Context Default: {}
+  ## @param tests.securityContext.pod default security context for Testing pods Default: {}
+  ## @param tests.securityContext.container default security context for Testing containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param tests.containerSecurityContext Configure Testing Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param tests.tolerations Tolerations for Testing pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -994,12 +982,12 @@ perfs:
   annotations: {}
   ## @param perfs.podAnnotations Add extra Pod annotations to the Performance pods Default: {}
   podAnnotations: {}
-  ## @param perfs.securityContext Configure Performance Security Context Default: {}
+  ## @param perfs.securityContext.pod default security context for Performance pods Default: {}
+  ## @param perfs.securityContext.container default security context for Performance containers Default: {}
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  securityContext: {}
-  ## @param perfs.containerSecurityContext Configure Performance Container Security Context Default: {}
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  securityContexts:
+    pod: {}
+    container: {}
   ## @param perfs.tolerations Tolerations for Performance pods assignment Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -1057,10 +1045,10 @@ perfs:
 
 
 ## Airflow
-## @param airflow.enabled Name for Airflow Default: true
+## @param airflow.enabled Name for Airflow Default: false
 ## @param airflow.name Name for Airflow Default: "airflow"
-## @param airflow.uid User id for Airflow Default: "5000"
-## @param airflow.gid group id for Airflow Default: "4000"
+## @param airflow.uid User id for Airflow Default: "106665"
+## @param airflow.gid group id for Airflow Default: "106966"
 ## @param airflow.image.repository Airflow image repository Default: "qmigrator.azurecr.io/qmigair"
 ## @param airflow.image.tag Airflow image tag/version Default: "2.8.4-ofjv-lvs"
 ## @param airflow.image.pullPolicy Airflow pull policy Default: "IfNotPresent"
@@ -1090,7 +1078,7 @@ airflow:
   baseUrl: http://0.0.0.0:8080/airflow
 
   ## Config settings to go into the mounted airflow.cfg
-  ## @param airflow.config Config settings to go into the mounted airflow.cfg Default: 
+  ## @param airflow.config Config settings to go into the mounted airflow.cfg Default:
   config:
     api:
       auth_backends: airflow.api.auth.backend.basic_auth
@@ -1154,7 +1142,7 @@ airflow:
   ## @param airflow.airflowLocalSettings file as a string (can be templated) Default: ~
   airflowLocalSettings: ~
 
-  ## @param airflow.podTemplate is a templated string containing the contents of `pod_template_file.yaml` used for KubernetesExecutor workers.
+  ## @param airflow.podTemplate is a templated string containing the contents of `pod_template_file.yaml` used for KubernetesExecutor workers Default: ~
   podTemplate: ~
   ## podTemplate: |
   ##   apiVersion: v1
@@ -1169,23 +1157,22 @@ airflow:
   webserverConfig: ~
   ## webserverConfig: |
   ##   from airflow import configuration as conf
-
   ##   # The SQLAlchemy connection string.
   ##   SQLALCHEMY_DATABASE_URI = conf.get('data
 
-  ## @param airflow.securityContexts.pod Detailed default security context for airflow deployments Pods
-  ## @param airflow.securityContexts.pod Detailed default security context for airflow deployments Container
+  ## @param airflow.securityContexts.pod Detailed default security context for Airflow Pods Default: {}
+  ## @param airflow.securityContexts.pod Detailed default security context for Airflow Container Default: {}
   securityContexts:
     pod: {}
     containers: {}
 
-  ## @param airflow.tolerations Tolerations for Airflow pods assignment Default: {}
+  ## @param airflow.tolerations Tolerations for Airflow pods Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
-  ## @param airflow.affinity Affinity for Airflow pods assignment (evaluated as a template) Default: {}
+  ## @param airflow.affinity Affinity for Airflow pods (evaluated as a template) Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
-  ## @param airflow.nodeSelector Node labels for Airflow pods assignment Default: {}
+  ## @param airflow.nodeSelector Node labels for Airflow pods Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   nodeSelector: {}
 
@@ -1215,9 +1202,9 @@ airflow:
     readinessProbe: {}
     startupProbe: {}
 
-    ## @param airflow.webserver.command Command to use when running the Airflow webserver (templated).
+    ## @param airflow.webserver.command Command to use when running the Airflow webserver Default: {}
     command: ~
-    ## @param airflow.webserver.args Args to use when running the Airflow webserver (templated).
+    ## @param airflow.webserver.args Args to use when running the Airflow webserver Default: ["bash", "-c", "exec airflow webserver"]
     args: ["bash", "-c", "exec airflow webserver"]
 
     ## @param airflow.webserver.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -1235,7 +1222,7 @@ airflow:
       annotations: {}
       ## @param airflow.webserver.service.type Airflow Webserver service type Default: "ClusterIP"
       type: ClusterIP
-      ## @param airflow.webserver.service.port Airflow Webserver service HTTP port Default: 6378
+      ## @param airflow.webserver.service.port Airflow Webserver service HTTP port Default: 8080
       port: 8080
   
   ## Airflow Scheduler
@@ -1244,9 +1231,9 @@ airflow:
     replicas: 1
     ## @param airflow.scheduler.safeToEvict This setting tells kubernetes that its ok to evict Default: true
     safeToEvict: true
-    ## @param airflow.scheduler.annotations Add Airflow Scheduler annotations to the Performance Default: {}
+    ## @param airflow.scheduler.annotations Add extra annotations to the Airflow Scheduler Default: {}
     annotations: {}
-    ## @param airflow.scheduler.podAnnotations Add Airflow Scheduler Pod annotations to the Performance pods Default: {}
+    ## @param airflow.scheduler.podAnnotations Add extra Pod annotations to the Airflow Scheduler pods Default: {}
     podAnnotations: {}
     ## @param airflow.scheduler.securityContext.pod default security context for Scheduler pods Default: {}
     ## @param airflow.scheduler.securityContext.container default security context for Scheduler containers Default: {}
@@ -1264,9 +1251,9 @@ airflow:
     readinessProbe: {}
     startupProbe: {}
 
-    ## @param airflow.scheduler.command Command to use when running the Airflow scheduler (templated).
+    ## @param airflow.scheduler.command Command to use when running the Airflow scheduler Default: ~
     command: ~
-    ## @param airflow.scheduler.args Args to use when running the Airflow scheduler (templated).
+    ## @param airflow.scheduler.args Args to use when running the Airflow scheduler Default: ["bash", "-c", "exec airflow scheduler"]
     args: ["bash", "-c", "exec airflow scheduler"]
 
     ## @param airflow.scheduler.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
@@ -1282,9 +1269,9 @@ airflow:
   worker:
     ## @param airflow.worker.safeToEvict This setting tells kubernetes that its ok to evict Default: true
     safeToEvict: true
-    ## @param airflow.worker.annotations Add Airflow Worker annotations to the Performance Default: {}
+    ## @param airflow.worker.annotations Add extra annotations to the Airflow Worker Default: {}
     annotations: {}
-    ## @param airflow.worker.podAnnotations Add Airflow Worker Pod annotations to the Performance pods Default: {}
+    ## @param airflow.worker.podAnnotations Add extra Pod annotations to the Airflow Worker pods Default: {}
     podAnnotations: {}
     ## @param airflow.worker.securityContext.pod default security context for Worker pods Default: {}
     ## @param airflow.worker.securityContext.container default security context for Worker containers Default: {}
@@ -1304,13 +1291,13 @@ airflow:
 
   ## Airflow WaitForMigrations
   waitForMigrations:
-    ## @param airflow.waitForMigrations.enabled Whether to create init container to wait for db migrations
+    ## @param airflow.waitForMigrations.enabled Whether to create init container to wait for db migrations Default: true
     enabled: true
     ## @param airflow.waitForMigrations.safeToEvict This setting tells kubernetes that its ok to evict Default: true
     safeToEvict: true
-    ## @param airflow.waitForMigrations.annotations Add Airflow waitForMigrations annotations to the Performance Default: {}
+    ## @param airflow.waitForMigrations.annotations Add extra annotations to the waitForMigrations Default: {}
     annotations: {}
-    ## @param airflow.waitForMigrations.podAnnotations Add Airflow waitForMigrations Pod annotations to the Performance pods Default: {}
+    ## @param airflow.waitForMigrations.podAnnotations Add extra Pod annotations to the waitForMigrations pods Default: {}
     podAnnotations: {}
     ## @param airflow.waitForMigrations.securityContext.container default security context for waitForMigrations containers Default: {}
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
@@ -1330,12 +1317,12 @@ airflow:
   createUserJob:
     ## @param airflow.createUserJob.safeToEvict This setting tells kubernetes that its ok to evict Default: true
     safeToEvict: true
-    ## @param airflow.createUserJob.annotations Add Airflow createUserJob annotations to the Performance Default: {}
+    ## @param airflow.createUserJob.annotations Add extra annotations to the createUserJob Default: {}
     annotations: {}
-    ## @param airflow.createUserJob.podAnnotations Add Airflow createUserJob Pod annotations to the Performance pods Default: {}
+    ## @param airflow.createUserJob.podAnnotations Add extra Pod annotations to the createUserJob pods Default: {}
     podAnnotations: {}
     ## @param airflow.createUserJob.securityContext.pod default security context for createUserJob pods Default: {}
-    ## @param airflow.createUserJob.securityContext.container default security context for Worker containers Default: {}
+    ## @param airflow.createUserJob.securityContext.container default security context for createUserJob containers Default: {}
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
     securityContexts:
       pod: {}
@@ -1352,16 +1339,16 @@ airflow:
   
   # Airflow database migration job settings
   migrateDatabaseJob:
-    ## @param airflow.migrateDatabaseJob.enabled Whether to create init container to wait for db migrations
+    ## @param airflow.migrateDatabaseJob.enabled Whether to create init container to wait for db migrations Default: true
     enabled: true
     ## @param airflow.migrateDatabaseJob.safeToEvict This setting tells kubernetes that its ok to evict Default: true
     safeToEvict: true
-    ## @param airflow.migrateDatabaseJob.annotations Add Airflow migrateDatabaseJob annotations to the Performance Default: {}
+    ## @param airflow.migrateDatabaseJob.annotations Add extra annotations to the migrateDatabaseJob Default: {}
     annotations: {}
-    ## @param airflow.migrateDatabaseJob.podAnnotations Add Airflow waitForMigrations Pod annotations to the Performance pods Default: {}
+    ## @param airflow.migrateDatabaseJob.podAnnotations Add extra Pod annotations to the migrateDatabaseJob pods Default: {}
     podAnnotations: {}
     ## @param airflow.migrateDatabaseJob.securityContext.pod default security context for migrateDatabaseJob pods Default: {}
-    ## @param airflow.migrateDatabaseJob.securityContext.container default security context for Worker containers Default: {}
+    ## @param airflow.migrateDatabaseJob.securityContext.container default security context for migrateDatabaseJob containers Default: {}
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
     securityContexts:
       pod: {}
@@ -1381,7 +1368,7 @@ airflow:
   ingress:
     ## @param airflow.ingress.enabled Enable ingress record generation Default: true
     enabled: true
-    ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
+    ## @param airflow.ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
     ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
     ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
     className: ""
@@ -1403,7 +1390,7 @@ airflow:
   ##  ENV_NAME: ENV_VALUE
   env: []
 
-  ## @param airflow.envSecret List of secrets with extra environment variables for all the component pods Default: [airflow-password]
+  ## @param airflow.envSecret List of secrets with extra environment variables for all the component pods Default: []
   ## Example:
   ## envSecret:
   ##  - name: ENV_NAME
@@ -1413,7 +1400,7 @@ airflow:
 
   ## Required Airflow credentials for secret
   secret:
-    ## @param airflow.secret.secretName Name for project secret Default: "" (name: qmig-air-keys)
+    ## @param airflow.secret.secretName Name for project secret Default: "" (name: qmig-air-secret)
     secretName: ""
     data:
       ## @param airflow.secret.data.airflow_secret_key Random generated key for webserver Default: null

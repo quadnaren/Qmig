@@ -1,4 +1,3 @@
-{{- if not .Values.msg.statefulSet.enabled -}}
 {{- if .Values.msg.persistentVolume.enabled -}}
 {{- if not .Values.msg.persistentVolume.existingClaim -}}
 apiVersion: v1
@@ -28,6 +27,5 @@ spec:
   resources:
     requests:
       storage: "{{ .Values.msg.persistentVolume.size }}"
-{{- end -}}
 {{- end -}}
 {{- end -}}

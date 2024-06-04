@@ -1,7 +1,8 @@
+{{- if .Values.airflow.enabled }}
 {{- $nodeSelector := .Values.airflow.nodeSelector }}
 {{- $affinity := .Values.airflow.affinity }}
 {{- $tolerations := .Values.airflow.tolerations }}
-{{- $securityContext := include "airflowPodSecurityContext" (list . .Values.airflow.scheduler) }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.airflow.scheduler) }}
 {{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.airflow.scheduler) }}
 {{- $containerSecurityContextWaitForMigrations := include "containerSecurityContext" (list . .Values.airflow.waitForMigrations) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.airflow.fullname" .) "empty" -}}
@@ -54,7 +55,7 @@ spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 10
       securityContext: {{ $securityContext | nindent 8 }}
-      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.airflow.imagePullSecrets) | indent 6 }} 
+      {{- include "qmig.dockerauthList" (list . .Values.airflow) | indent 6 }}
       initContainers:
         {{- if .Values.airflow.waitForMigrations.enabled }}
         - name: wait-for-airflow-migrations
@@ -107,7 +108,7 @@ spec:
                   {{- include "qmig.airflow.scheduler_startup_check_command" . | indent 14 }}
                 {{- end }}
           volumeMounts:
-          {{- include "qmig.airflow.dataMounts" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
+          {{- include "qmig.airflow.dataMounts" (dict "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
           {{- if .Values.airflow.scheduler.extraVolumeMounts }}
             {{- toYaml .Values.airflow.scheduler.extraVolumeMounts | nindent 10 }}
           {{- end }}
@@ -117,3 +118,4 @@ spec:
       {{- if .Values.airflow.extraVolumes }}
         {{- toYaml .Values.airflow.extraVolumes | nindent 8 }}
       {{- end }}
+{{- end }}

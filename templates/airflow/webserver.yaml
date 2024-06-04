@@ -1,7 +1,8 @@
+{{- if .Values.airflow.enabled }}
 {{- $nodeSelector := .Values.airflow.nodeSelector }}
 {{- $affinity := .Values.airflow.affinity }}
 {{- $tolerations := .Values.airflow.tolerations }}
-{{- $securityContext := include "airflowPodSecurityContext" (list . .Values.airflow.webserver) }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.airflow.webserver) }}
 {{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.airflow.webserver) }}
 {{- $containerSecurityContextWaitForMigrations := include "containerSecurityContext" (list . .Values.airflow.waitForMigrations) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.airflow.fullname" .) "empty" -}}
@@ -62,7 +63,7 @@ spec:
       tolerations: {{- toYaml $tolerations | nindent 8 }}
       restartPolicy: Always
       securityContext: {{ $securityContext | nindent 8 }}
-      {{- include "qmig.dockerauthList" (dict "Values" .Values "imagePullSecrets" .Values.airflow.imagePullSecrets) | indent 6 }} 
+      {{- include "qmig.dockerauthList" (list . .Values.airflow) | indent 6 }}
       initContainers:
         {{- if .Values.airflow.waitForMigrations.enabled }}
         - name: wait-for-airflow-migrations
@@ -136,7 +137,7 @@ spec:
             failureThreshold: {{ .Values.airflow.webserver.startupProbe.failureThreshold | default 6 }}
             periodSeconds: {{ .Values.airflow.webserver.startupProbe.periodSeconds | default 10  }}
           volumeMounts:
-          {{- include "qmig.airflow.dataMounts" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
+          {{- include "qmig.airflow.dataMounts" (dict "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
           {{- if .Values.airflow.webserver.extraVolumeMounts }}
             {{- toYaml .Values.airflow.webserver.extraVolumeMounts | nindent 10 }}
           {{- end }}
@@ -146,3 +147,4 @@ spec:
       {{- if .Values.airflow.extraVolumes }}
         {{- toYaml .Values.airflow.extraVolumes | nindent 8 }}
       {{- end }}
+{{- end }}
