@@ -26,7 +26,7 @@ helm install <name> qmigrator/qmig \
 ## Enable Airflow DataMigration
 > You need to pass extra flag for enabling the airflow
 ```
-  --set airflow.enabled=true --set airflow.secret.data.password="passxxxx"
+  --set airflow.enabled=true --set airflow.secret.data.airflow_password="passxxxx"
 ```
 
 ## Data Persistence
