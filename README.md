@@ -119,8 +119,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | app.livenessProbe.enabled | Enable livenessProbe on App Component containers | true | 
 | app.annotations | Add extra annotations to the App Component | {} | 
 | app.podAnnotations | Add extra Pod annotations to the App Component pods | {} | 
-| app.securityContext.pod | default security context for App Component pods | {} | 
-| app.securityContext.container | default security context for App Component containers | {} | 
+| app.securityContexts.pod | default security context for App Component pods | {} | 
+| app.securityContexts.container | default security context for App Component containers | {} | 
 | app.tolerations | Tolerations for App Component pods assignment | {} | 
 | app.affinity | Affinity for App Component pods assignment (evaluated as a template) | {} | 
 | app.nodeSelector | Node labels for App Component pods assignment | {} | 
@@ -151,8 +151,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | eng.livenessProbe.enabled | Enable livenessProbe on Engine component containers | true | 
 | eng.annotations | Add extra annotations to the Engine component | {} | 
 | eng.podAnnotations | Add extra Pod annotations to the Engine component pods | {} | 
-| eng.securityContext.pod | default security context for Engine component pods | {} | 
-| eng.securityContext.container | default security context for Engine component containers | {} | 
+| eng.securityContexts.pod | default security context for Engine component pods | {} | 
+| eng.securityContexts.container | default security context for Engine component containers | {} | 
 | eng.tolerations | Tolerations for Engine component pods assignment | {} | 
 | eng.affinity | Affinity for Engine component pods assignment (evaluated as a template) | {} | 
 | eng.nodeSelector | Node labels for Engine component pods assignment | {} | 
@@ -186,8 +186,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | db.dbshConfig.stringOverride | Override shell script to be run on the initial time of DB | "" | 
 | db.annotations | Add extra annotations to the DB component | {} | 
 | db.podAnnotations | Add extra Pod annotations to the DB component pods | {} | 
-| db.securityContext.pod | default security context for DB Component pods | {} | 
-| db.securityContext.container | default security context for DB Component containers | {} | 
+| db.securityContexts.pod | default security context for DB Component pods | {} | 
+| db.securityContexts.container | default security context for DB Component containers | {} | 
 | db.tolerations | Tolerations for DB component pods assignment | {} | 
 | db.affinity | Affinity for DB component pods assignment (evaluated as a template) | {} | 
 | db.nodeSelector | Node labels for DB component pods assignment | {} | 
@@ -223,8 +223,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | msg.keyDBConfig.stringOverride | Override shell script to be run on the initial time of Cache | "" | 
 | msg.annotations | Add extra annotations to the Cache component | {} | 
 | msg.podAnnotations | Add extra Pod annotations to the Cache component pods | {} | 
-| msg.securityContext.pod | default security context for Cache Component pods | {} | 
-| msg.securityContext.container | default security context for Cache Component containers | {} | 
+| msg.securityContexts.pod | default security context for Cache Component pods | {} | 
+| msg.securityContexts.container | default security context for Cache Component containers | {} | 
 | msg.tolerations | Tolerations for Cache component pods assignment | {} | 
 | msg.affinity | Affinity for Cache component pods assignment (evaluated as a template) | {} | 
 | msg.nodeSelector | Node labels for Cache component pods assignment | {} | 
@@ -256,8 +256,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | asses.imagePullSecrets | Assessment pull secrets | {} | 
 | asses.annotations | Add extra annotations to the Assessment | {} | 
 | asses.podAnnotations | Add extra Pod annotations to the Assessment pods | {} | 
-| asses.securityContext.pod | default security context for Assessment pods | {} | 
-| asses.securityContext.container | default security context for Assessment containers | {} | 
+| asses.securityContexts.pod | default security context for Assessment pods | {} | 
+| asses.securityContexts.container | default security context for Assessment containers | {} | 
 | asses.tolerations | Tolerations for Assessment pods assignment | {} | 
 | asses.affinity | Affinity for Assessment pods assignment (evaluated as a template) | {} | 
 | asses.nodeSelector | Node labels for Assessment pods assignment | {} | 
@@ -284,8 +284,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | convs.imagePullSecrets | Conversion pull secrets | {} | 
 | convs.annotations | Add extra annotations to the Conversion | {} | 
 | convs.podAnnotations | Add extra Pod annotations to the Conversion pods | {} | 
-| convs.securityContext.pod | default security context for Conversion pods | {} | 
-| convs.securityContext.container | default security context for Conversion containers | {} | 
+| convs.securityContexts.pod | default security context for Conversion pods | {} | 
+| convs.securityContexts.container | default security context for Conversion containers | {} | 
 | convs.tolerations | Tolerations for Conversion pods assignment | {} | 
 | convs.affinity | Affinity for Conversion pods assignment (evaluated as a template) | {} | 
 | convs.nodeSelector | Node labels for Conversion pods assignment | {} | 
@@ -312,8 +312,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | migrt.imagePullSecrets | Migration pull secrets | {} | 
 | migrt.annotations | Add extra annotations to the Migration | {} | 
 | migrt.podAnnotations | Add extra Pod annotations to the Migration pods | {} | 
-| migrt.securityContext.pod | default security context for Migration pods | {} | 
-| migrt.securityContext.container | default security context for Migration containers | {} | 
+| migrt.securityContexts.pod | default security context for Migration pods | {} | 
+| migrt.securityContexts.container | default security context for Migration containers | {} | 
 | migrt.tolerations | Tolerations for Migration pods assignment | {} | 
 | migrt.affinity | Affinity for Migration pods assignment (evaluated as a template) | {} | 
 | migrt.nodeSelector | Node labels for Migration pods assignment | {} | 
@@ -340,8 +340,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | tests.imagePullSecrets | Testing pull secrets | {} | 
 | tests.annotations | Add extra annotations to the Testing | {} | 
 | tests.podAnnotations | Add extra Pod annotations to the Testing pods | {} | 
-| tests.securityContext.pod | default security context for Testing pods | {} | 
-| tests.securityContext.container | default security context for Testing containers | {} | 
+| tests.securityContexts.pod | default security context for Testing pods | {} | 
+| tests.securityContexts.container | default security context for Testing containers | {} | 
 | tests.tolerations | Tolerations for Testing pods assignment | {} | 
 | tests.affinity | Affinity for Testing pods assignment (evaluated as a template) | {} | 
 | tests.nodeSelector | Node labels for Testing pods assignment | {} | 
@@ -368,8 +368,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | perfs.imagePullSecrets | Performance pull secrets | {} | 
 | perfs.annotations | Add extra annotations to the Performance | {} | 
 | perfs.podAnnotations | Add extra Pod annotations to the Performance pods | {} | 
-| perfs.securityContext.pod | default security context for Performance pods | {} | 
-| perfs.securityContext.container | default security context for Performance containers | {} | 
+| perfs.securityContexts.pod | default security context for Performance pods | {} | 
+| perfs.securityContexts.container | default security context for Performance containers | {} | 
 | perfs.tolerations | Tolerations for Performance pods assignment | {} | 
 | perfs.affinity | Affinity for Performance pods assignment (evaluated as a template) | {} | 
 | perfs.nodeSelector | Node labels for Performance pods assignment | {} | 
@@ -404,7 +404,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.podTemplate | is a templated string containing the contents of `pod_template_file.yaml` used for KubernetesExecutor workers | ~ | 
 | airflow.webserverConfig | string (can be templated) will be mounted into the Airflow Webserver | ~ | 
 | airflow.securityContexts.pod | Detailed default security context for Airflow Pods | {} | 
-| airflow.securityContexts.pod | Detailed default security context for Airflow Container | {} | 
+| airflow.securityContexts.container | Detailed default security context for Airflow Container | {} | 
 | airflow.tolerations | Tolerations for Airflow pods | {} | 
 | airflow.affinity | Affinity for Airflow pods (evaluated as a template) | {} | 
 | airflow.nodeSelector | Node labels for Airflow pods | {} | 
@@ -427,8 +427,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.webserver.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.webserver.annotations | Add extra annotations to the Airflow Webserver | {} | 
 | airflow.webserver.podAnnotations | Add extra Pod annotations to the Airflow Webserver pods | {} | 
-| airflow.webserver.securityContext.pod | default security context for Webserver pods | {} | 
-| airflow.webserver.securityContext.container | default security context for Webserver containers | {} | 
+| airflow.webserver.securityContexts.pod | default security context for Webserver pods | {} | 
+| airflow.webserver.securityContexts.container | default security context for Webserver containers | {} | 
 | airflow.webserver.livenessProbe | livenessProbe on Airflow webserver | 
 | airflow.webserver.readinessProbe | readinessProbe on Airflow webserver | 
 | airflow.webserver.startupProbe | startupProbe on Airflow webserver | 
@@ -445,8 +445,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.scheduler.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.scheduler.annotations | Add extra annotations to the Airflow Scheduler | {} | 
 | airflow.scheduler.podAnnotations | Add extra Pod annotations to the Airflow Scheduler pods | {} | 
-| airflow.scheduler.securityContext.pod | default security context for Scheduler pods | {} | 
-| airflow.scheduler.securityContext.container | default security context for Scheduler containers | {} | 
+| airflow.scheduler.securityContexts.pod | default security context for Scheduler pods | {} | 
+| airflow.scheduler.securityContexts.container | default security context for Scheduler containers | {} | 
 | airflow.scheduler.livenessProbe | livenessProbe on Airflow Scheduler | 
 | airflow.scheduler.readinessProbe | readinessProbe on Airflow Scheduler | 
 | airflow.scheduler.startupProbe | startupProbe on Airflow Scheduler | 
@@ -459,8 +459,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.worker.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.worker.annotations | Add extra annotations to the Airflow Worker | {} | 
 | airflow.worker.podAnnotations | Add extra Pod annotations to the Airflow Worker pods | {} | 
-| airflow.worker.securityContext.pod | default security context for Worker pods | {} | 
-| airflow.worker.securityContext.container | default security context for Worker containers | {} | 
+| airflow.worker.securityContexts.pod | default security context for Worker pods | {} | 
+| airflow.worker.securityContexts.container | default security context for Worker containers | {} | 
 | airflow.worker.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
 ### Init-container to wait migration
 | Property | Description | Default |
@@ -469,7 +469,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.waitForMigrations.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.waitForMigrations.annotations | Add extra annotations to the waitForMigrations | {} | 
 | airflow.waitForMigrations.podAnnotations | Add extra Pod annotations to the waitForMigrations pods | {} | 
-| airflow.waitForMigrations.securityContext.container | default security context for waitForMigrations containers | {} | 
+| airflow.waitForMigrations.securityContexts.container | default security context for waitForMigrations containers | {} | 
 | airflow.waitForMigrations.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
 ### Airflow Create User Job
 | Property | Description | Default |
@@ -477,8 +477,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.createUserJob.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.createUserJob.annotations | Add extra annotations to the createUserJob | {} | 
 | airflow.createUserJob.podAnnotations | Add extra Pod annotations to the createUserJob pods | {} | 
-| airflow.createUserJob.securityContext.pod | default security context for createUserJob pods | {} | 
-| airflow.createUserJob.securityContext.container | default security context for createUserJob containers | {} | 
+| airflow.createUserJob.securityContexts.pod | default security context for createUserJob pods | {} | 
+| airflow.createUserJob.securityContexts.container | default security context for createUserJob containers | {} | 
 | airflow.createUserJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
 ### Airflow DB Migration Job
 | Property | Description | Default |
@@ -487,6 +487,6 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.migrateDatabaseJob.safeToEvict | This setting tells kubernetes that its ok to evict | true | 
 | airflow.migrateDatabaseJob.annotations | Add extra annotations to the migrateDatabaseJob | {} | 
 | airflow.migrateDatabaseJob.podAnnotations | Add extra Pod annotations to the migrateDatabaseJob pods | {} | 
-| airflow.migrateDatabaseJob.securityContext.pod | default security context for migrateDatabaseJob pods | {} | 
-| airflow.migrateDatabaseJob.securityContext.container | default security context for migrateDatabaseJob containers | {} | 
+| airflow.migrateDatabaseJob.securityContexts.pod | default security context for migrateDatabaseJob pods | {} | 
+| airflow.migrateDatabaseJob.securityContexts.container | default security context for migrateDatabaseJob containers | {} | 
 | airflow.migrateDatabaseJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
