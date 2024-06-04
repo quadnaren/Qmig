@@ -94,7 +94,7 @@ shared:
 ## Enable to quickly install controller within the helm
 ## https://kubernetes.github.io/ingress-nginx/deploy/
 ingressController:
-  ## @param ingressController.enabled Whether or not to install the ingressController Default: true
+  ## @param ingressController.enabled Whether or not to install the ingressController Default: false
   enabled: false
   ## @param ingressController.controllerImage.repository Ingress controller image repository Default: qmigrator.azurecr.io/ingress-nginx/controller
   ## @param ingressController.controllerImage.tag Ingress controller image tag/version Default: "v1.9.4"

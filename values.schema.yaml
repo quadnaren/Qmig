@@ -12,13 +12,17 @@ imageCredentials:
     username: "xxxxxx-951af420-xxxxxx"
     password: "xxxxxx-R518xxxxxxxx"
 
+## Installing the Ingress Controller
+ingressController:
+  enabled: true
+
 ## Required exsiting or new PVC to be created
 shared:
   persistentVolume:
     existingClaim: "qmig-shared"
     subPath: "cloud"
 
-## Airflow configuration
+## Enabling the Airflow
 airflow:
   enabled: true
   secret:

@@ -106,7 +106,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 ### Ingress Controller
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
-| ingressController.enabled | Whether or not to install the ingressController | true | 
+| ingressController.enabled | Whether or not to install the ingressController | false | 
 | ingressController.controllerImage.repository | Ingress controller image repository | qmigrator.azurecr.io/ingress-nginx/controller | 
 | ingressController.controllerImage.tag | Ingress controller image tag/version | "v1.9.4" | 
 | ingressController.webhookImage.repository | Ingress controller image repository | qmigrator.azurecr.io/ingress-nginx/kube-webhook-certgen | 
