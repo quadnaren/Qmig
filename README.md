@@ -4,13 +4,13 @@
 https://github.com/quadnaren/Qmig
 
 # Pre-requisites
-- Project information given by vendor like Poject ID, Name, Login information etc.
-- Docker Image registry credentails given by vendor
+- Project information from vendor like project ID, Name, Login information, etc.
+- Docker Image registry credentials given by the vendor
 
 > [!NOTE]
-Above parameters requires in secret creation. Check secret & imageCredentials section of values.yaml
+The above parameters are required for secret. Check the secret & imageCredentials section of values.yaml
 
-## Required namespace or create own
+## Required namespace or create your own
 ```
 Kubectl create namespace qmig-ns 
 Kubectl config set-context --current --namespace=qmig-ns
@@ -26,14 +26,27 @@ helm install <name> qmigrator/qmig \
   --set imageCredentials.data.username="userxxxx" --set imageCredentials.data.password="passxxxx"
 ```
 
+## Ingress Installation
+- Qmigrator uses ingress to expose the application
+- You may use existing ingress if present in the cluster by updating the properties of
+  - app.ingress
+  - eng.ingress
+  - airflow.ingress
+<br>OR 
+- Enable the flag of Ingress controller installation within the Helm chart
+```
+  --set ingressController.enabled=true
+```
+
 ## Enable Airflow DataMigration
-> You need to pass extra flag for enabling the airflow
+- Pass extra flag for Airflow installation within Helm chart
+- Password is mandatory to access the Airflow
 ```
   --set airflow.enabled=true --set airflow.secret.data.airflow_password="passxxxx"
 ```
 
 ## Data Persistence
-- Qmigrator use shared volume for components like App, Engine & Others
+- Qmigrator uses shared volume for components like App, Engine & Others
 - While Metadata DB (Postgres) & Cache Component have their own
 - Override the pre-created PVC from persistentVolume.existingClaim flag in values.yaml
 - You may use the existing/default StorageClass for dynamic volume creation
@@ -43,10 +56,10 @@ Please check the examples for creating custom StorageClass, PV & PVC from this r
 More Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
 
 > [!IMPORTANT]
-DO NOT USE ReadWriteMany or Shared Persitent volume given here to the Metadata DB (Postgres) & Cache Component
+DO NOT USE ReadWriteMany or Shared Persistent volume given here to the Metadata DB (Postgres) & Cache Component
 
 # Customise Qmigrator
-Use values.yaml from this repo, edit as required and use while installing Helm
+- Use values.yaml from this repo, edit as required, and use while installing Helm
 ```
 helm install <name> qmigrator/qmig -f values.yaml
 ```
