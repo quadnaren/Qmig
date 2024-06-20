@@ -42,7 +42,7 @@ spec:
   affinity: {{- toYaml $affinity | nindent 4 }}
   terminationGracePeriodSeconds: 600
   tolerations: {{- toYaml $tolerations | nindent 4 }}
-  serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+  serviceAccountName: {{ template "qmig.serviceAccount" . }}
   volumes:
   {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 4 }}
   {{- include "qmig.airflow.volume" . | indent 4 }}

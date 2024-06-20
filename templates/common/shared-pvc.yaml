@@ -6,7 +6,7 @@ metadata:
   name: {{ include "qmig.pv.shared" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.labels" . | nindent 4 }}
+    {{- include "qmig.shared.labels" . | nindent 4 }}
   {{- with .Values.shared.persistentVolume.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

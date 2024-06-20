@@ -88,7 +88,7 @@ roleRef:
   name: {{ include "qmig.airflow.fullname" . }}-pod-launcher-role
 subjects:
   - kind: ServiceAccount
-    name: {{ template "qmig.serviceAccountName" . }}
+    name: {{ template "qmig.serviceAccount" . }}
     namespace: "{{ .Release.Namespace }}"
 {{- end }}
 {{- if and .Values.airflow.enabled .Values.airflow.rbac.create }}
@@ -109,6 +109,6 @@ roleRef:
   name: {{ include "qmig.airflow.fullname" . }}-pod-log-reader-role
 subjects:
   - kind: ServiceAccount
-    name: {{ template "qmig.serviceAccountName" . }}
+    name: {{ template "qmig.serviceAccount" . }}
     namespace: "{{ .Release.Namespace }}"
 {{- end }}

@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ template "qmig.serviceAccountName" . }}
+  name: {{ template "qmig.serviceAccount" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.labels" . | nindent 4 }}
+    {{- include "qmig.serviceAccount.labels" . | nindent 4 }}
   {{- with .Values.serviceAccount.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -17,10 +17,10 @@ automountServiceAccountToken: true
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ template "qmig.serviceAccountName" . }}-role
+  name: {{ template "qmig.serviceAccount" . }}-role
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.labels" . | nindent 4 }}
+    {{- include "qmig.serviceAccount.labels" . | nindent 4 }}
 rules:
   - apiGroups: [""]
     resources:
@@ -36,25 +36,25 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ template "qmig.serviceAccountName" . }}-rolebinding
+  name: {{ template "qmig.serviceAccount" . }}-rolebinding
   namespace: {{ .Release.Namespace }} 
   labels:
-    {{- include "qmig.labels" . | nindent 4 }}
+    {{- include "qmig.serviceAccount.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ template "qmig.serviceAccountName" . }}-role
+  name: {{ template "qmig.serviceAccount" . }}-role
 subjects:
 - namespace: {{ .Release.Namespace }} 
   kind: ServiceAccount
-  name: {{ template "qmig.serviceAccountName" . }}
+  name: {{ template "qmig.serviceAccount" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ template "qmig.serviceAccountName" . }}-crole
+  name: {{ template "qmig.serviceAccount" . }}-crole
   labels:
-    {{- include "qmig.labels" . | nindent 4 }}
+    {{- include "qmig.serviceAccount.labels" . | nindent 4 }}
 rules:
   - apiGroups: [""]
     resources:
@@ -64,15 +64,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ template "qmig.serviceAccountName" . }}-crolebinding
+  name: {{ template "qmig.serviceAccount" . }}-crolebinding
   labels:
-    {{- include "qmig.labels" . | nindent 4 }}
+    {{- include "qmig.serviceAccount.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "qmig.serviceAccountName" . }}-crole
+  name: {{ template "qmig.serviceAccount" . }}-crole
 subjects:
 - namespace: {{ .Release.Namespace }} 
   kind: ServiceAccount
-  name: {{ template "qmig.serviceAccountName" . }}
+  name: {{ template "qmig.serviceAccount" . }}
 {{- end }}

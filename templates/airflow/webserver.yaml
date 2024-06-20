@@ -45,7 +45,7 @@ spec:
           {{- toYaml .Values.airflow.webserver.podAnnotations | nindent 8 }}
         {{- end }}
     spec:
-      serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+      serviceAccountName: {{ template "qmig.serviceAccount" . }}
       nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
       affinity:
         {{- if $affinity }}

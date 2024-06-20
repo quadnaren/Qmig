@@ -1,3 +1,4 @@
+{{- if .Values.convs.enabled }}
 {{- $nodeSelector := .Values.convs.nodeSelector }}
 {{- $affinity := .Values.convs.affinity }}
 {{- $tolerations := .Values.convs.tolerations }}
@@ -40,7 +41,7 @@ spec:
           nodeSelector: {{- toYaml $nodeSelector | nindent 12 }}
           affinity: {{- toYaml $affinity | nindent 12 }}
           tolerations: {{- toYaml $tolerations | nindent 12 }}
-          serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+          serviceAccountName: {{ template "qmig.serviceAccount" . }}
           containers:
             - name: {{ .Values.convs.name }}
               image: "{{ .Values.convs.image.repository }}:{{ .Values.convs.image.tag }}"
@@ -82,3 +83,4 @@ spec:
           {{- if .Values.convs.extraVolumes }}
             {{- toYaml .Values.convs.extraVolumes | nindent 12 }}
           {{- end }}
+{{- end }}

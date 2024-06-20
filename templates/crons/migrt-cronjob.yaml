@@ -1,3 +1,4 @@
+{{- if .Values.migrt.enabled }}
 {{- $nodeSelector := .Values.migrt.nodeSelector }}
 {{- $affinity := .Values.migrt.affinity }}
 {{- $tolerations := .Values.migrt.tolerations }}
@@ -40,7 +41,7 @@ spec:
           nodeSelector: {{- toYaml $nodeSelector | nindent 12 }}
           affinity: {{- toYaml $affinity | nindent 12 }}
           tolerations: {{- toYaml $tolerations | nindent 12 }}
-          serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+          serviceAccountName: {{ template "qmig.serviceAccount" . }}
           containers:
             - name: {{ .Values.migrt.name }}
               image: "{{ .Values.migrt.image.repository }}:{{ .Values.migrt.image.tag }}"
@@ -82,3 +83,4 @@ spec:
           {{- if .Values.migrt.extraVolumes }}
             {{- toYaml .Values.migrt.extraVolumes | nindent 12 }}
           {{- end }}
+{{- end }}

@@ -37,7 +37,7 @@ spec:
       nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
       affinity: {{- toYaml $affinity | nindent 8 }}
       tolerations: {{- toYaml $tolerations | nindent 8 }}
-      serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+      serviceAccountName: {{ template "qmig.serviceAccount" . }}
       containers:
         - name: {{ .Values.eng.name }}
           image: "{{ .Values.eng.image.repository }}:{{ .Values.eng.image.tag }}"

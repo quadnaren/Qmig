@@ -1,3 +1,4 @@
+{{- if .Values.asses.enabled }}
 {{- $nodeSelector := .Values.asses.nodeSelector }}
 {{- $affinity := .Values.asses.affinity }}
 {{- $tolerations := .Values.asses.tolerations }}
@@ -40,7 +41,7 @@ spec:
           nodeSelector: {{- toYaml $nodeSelector | nindent 12 }}
           affinity: {{- toYaml $affinity | nindent 12 }}
           tolerations: {{- toYaml $tolerations | nindent 12 }}
-          serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+          serviceAccountName: {{ template "qmig.serviceAccount" . }}
           containers:
             - name: {{ .Values.asses.name }}
               image: "{{ .Values.asses.image.repository }}:{{ .Values.asses.image.tag }}"
@@ -82,3 +83,4 @@ spec:
           {{- if .Values.asses.extraVolumes }}
             {{- toYaml .Values.asses.extraVolumes | nindent 12 }}
           {{- end }}
+{{- end }}

@@ -1,3 +1,4 @@
+{{- if .Values.perfs.enabled }}
 {{- $nodeSelector := .Values.perfs.nodeSelector }}
 {{- $affinity := .Values.perfs.affinity }}
 {{- $tolerations := .Values.perfs.tolerations }}
@@ -40,7 +41,7 @@ spec:
           nodeSelector: {{- toYaml $nodeSelector | nindent 12 }}
           affinity: {{- toYaml $affinity | nindent 12 }}
           tolerations: {{- toYaml $tolerations | nindent 12 }}
-          serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+          serviceAccountName: {{ template "qmig.serviceAccount" . }}
           containers:
             - name: {{ .Values.perfs.name }}
               image: "{{ .Values.perfs.image.repository }}:{{ .Values.perfs.image.tag }}"
@@ -82,3 +83,4 @@ spec:
           {{- if .Values.perfs.extraVolumes }}
             {{- toYaml .Values.perfs.extraVolumes | nindent 12 }}
           {{- end }}
+{{- end }}

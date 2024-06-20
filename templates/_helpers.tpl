@@ -51,15 +51,29 @@ Secret specification
 {{- printf "%s" .Values.secret.secretName | default  (printf "%s-secret" .Release.Name)  -}}
 {{- end -}}
 
+{{- define "qmig.secret.labels" -}}
+{{ include "qmig.labels" . }}
+{{- with .Values.secret.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{- end -}}
+
 {{/*
 Construct the name of the ServiceAccount.
 */}}
-{{- define "qmig.serviceAccountName" -}}
+{{- define "qmig.serviceAccount" -}}
 {{- if .Values.serviceAccount.create -}}
 {{- printf "%s" .Values.serviceAccount.name | default  (printf "%s-operator" .Release.Name) -}}
 {{- else -}}
 {{- .Values.serviceAccount.name | default "default" -}}
 {{- end -}}
+{{- end -}}
+
+{{- define "qmig.serviceAccount.labels" -}}
+{{ include "qmig.labels" . }}
+{{- with .Values.serviceAccount.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 
@@ -69,6 +83,9 @@ All specification for app module
 {{- define "qmig.app.selectorLabels" -}}
 component: {{ .Values.app.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.app.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.app.labels" -}}
@@ -87,6 +104,9 @@ All specification for eng module
 {{- define "qmig.eng.selectorLabels" -}}
 component: {{ .Values.eng.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.eng.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.eng.labels" -}}
@@ -153,6 +173,9 @@ All specification for db module
 {{- define "qmig.db.selectorLabels" -}}
 component: {{ .Values.db.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.db.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.db.labels" -}}
@@ -240,6 +263,9 @@ All specification for msg module
 {{- define "qmig.msg.selectorLabels" -}}
 component: {{ .Values.msg.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.msg.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.msg.labels" -}}
@@ -282,6 +308,9 @@ All specification for asses module
 {{- define "qmig.asses.selectorLabels" -}}
 component: {{ .Values.asses.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.asses.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.asses.labels" -}}
@@ -314,6 +343,9 @@ All specification for convs module
 {{- define "qmig.convs.selectorLabels" -}}
 component: {{ .Values.convs.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.convs.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.convs.labels" -}}
@@ -345,6 +377,9 @@ All specification for migrt module
 {{- define "qmig.migrt.selectorLabels" -}}
 component: {{ .Values.migrt.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.migrt.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.migrt.labels" -}}
@@ -382,6 +417,9 @@ All specification for tests module
 {{- define "qmig.tests.selectorLabels" -}}
 component: {{ .Values.tests.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.tests.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.tests.labels" -}}
@@ -415,6 +453,9 @@ All specification for perfs module
 {{- define "qmig.perfs.selectorLabels" -}}
 component: {{ .Values.perfs.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.perfs.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.perfs.labels" -}}
@@ -448,6 +489,12 @@ All specification for PVC
 {{- printf "%s-%s" .Release.Name "shared" | quote | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.shared.labels" -}}
+{{ include "qmig.labels" . }}
+{{- with .Values.shared.persistentVolume.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{- end -}}
 
 {{/*
 All specification for PVC
@@ -474,6 +521,13 @@ Docker credentails specification
 {{- define "qmig.dockerSecret" }}
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" (default "qmigrator.azurecr.io" .Values.imageCredentials.data.registry) .Values.imageCredentials.data.username .Values.imageCredentials.data.password (printf "%s:%s" .Values.imageCredentials.data.username .Values.imageCredentials.data.password | b64enc) | b64enc }}
 {{- end }}
+
+{{- define "qmig.dockerSecret.labels" -}}
+{{ include "qmig.labels" . }}
+{{- with .Values.imageCredentials.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{- end -}}
 
 {{- define "qmig.dockerauthList" -}}
   {{- $ := index . 0 -}}
@@ -502,6 +556,9 @@ All specification for airflow
 {{- define "qmig.airflow.selectorLabels" -}}
 main: {{ .Values.airflow.name | quote }}
 {{ include "qmig.selectorLabels" . }}
+{{- with .Values.airflow.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.airflow.labels" -}}

@@ -1,3 +1,4 @@
+{{- if .Values.tests.enabled }}
 {{- $nodeSelector := .Values.tests.nodeSelector }}
 {{- $affinity := .Values.tests.affinity }}
 {{- $tolerations := .Values.tests.tolerations }}
@@ -40,7 +41,7 @@ spec:
           nodeSelector: {{- toYaml $nodeSelector | nindent 12 }}
           affinity: {{- toYaml $affinity | nindent 12 }}
           tolerations: {{- toYaml $tolerations | nindent 12 }}
-          serviceAccountName: {{ template "qmig.serviceAccountName" . }}
+          serviceAccountName: {{ template "qmig.serviceAccount" . }}
           containers:
             - name: {{ .Values.tests.name }}
               image: "{{ .Values.tests.image.repository }}:{{ .Values.tests.image.tag }}"
@@ -82,3 +83,4 @@ spec:
           {{- if .Values.tests.extraVolumes }}
             {{- toYaml .Values.tests.extraVolumes | nindent 12 }}
           {{- end }}
+{{- end }}

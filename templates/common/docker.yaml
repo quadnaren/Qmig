@@ -6,10 +6,13 @@ metadata:
   name: {{ include "qmig.dockerauth" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.labels" . | nindent 4 }}
+    {{- include "qmig.dockerSecret.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade,post-delete
     "helm.sh/hook-weight": "-1"
+  {{- with .Values.imageCredentials.annotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: {{ template "qmig.dockerSecret" . }}
