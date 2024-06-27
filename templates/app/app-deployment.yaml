@@ -41,9 +41,8 @@ spec:
           image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
           imagePullPolicy: {{ .Values.app.image.pullPolicy }}
           ports:
-            - name: {{ .Values.app.name }}-http
-              containerPort: 4200
-              protocol: TCP
+            - name: app-ui
+              containerPort: {{ .Values.app.service.port }}
           securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.app.resources | nindent 12 }}

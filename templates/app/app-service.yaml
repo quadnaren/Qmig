@@ -11,9 +11,9 @@ metadata:
   {{- end }}
 spec:
   type: {{ .Values.app.service.type }}
-  ports:
-    - port: {{ .Values.app.service.port }}
-      targetPort: {{ .Values.app.name }}-http
-      protocol: TCP
   selector:
     {{- include "qmig.app.selectorLabels" . | nindent 4 }}
+  ports:
+    - port: {{ .Values.app.service.port }}
+      targetPort: app-ui
+      protocol: TCP

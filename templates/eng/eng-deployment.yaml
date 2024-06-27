@@ -43,9 +43,8 @@ spec:
           image: "{{ .Values.eng.image.repository }}:{{ .Values.eng.image.tag }}"
           imagePullPolicy: {{ .Values.eng.image.pullPolicy }}
           ports:
-            - name: {{ .Values.eng.name }}-tcp
-              containerPort: 8080
-              protocol: TCP
+            - name: engine-api
+              containerPort: {{ .Values.eng.service.port }}
           securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.eng.resources | nindent 12 }}

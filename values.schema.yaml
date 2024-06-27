@@ -20,7 +20,10 @@ ingressController:
 shared:
   persistentVolume:
     existingClaim: "qmig-shared"
-    subPath: "cloud"
+
+ingress:
+  className: "nginx"
+  host: "example.internal"
 
 ## Enabling the Airflow
 airflow:

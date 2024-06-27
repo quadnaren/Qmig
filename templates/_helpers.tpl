@@ -78,6 +78,17 @@ Construct the name of the ServiceAccount.
 
 
 {{/*
+All specification for Ingress
+*/}}
+{{- define "qmig.ingress.labels" -}}
+{{ include "qmig.selectorLabels" . }}
+{{- with .Values.ingress.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{ include "qmig.labels" . }}
+{{- end -}}
+
+{{/*
 All specification for app module
 */}}
 {{- define "qmig.app.selectorLabels" -}}

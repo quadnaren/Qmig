@@ -7,7 +7,7 @@ APP VERSION: {{ .Chart.AppVersion }}
 {{- $clusterDomain := .Values.clusterDomain }}
 {{- $airflowSecretName := include "qmig.airflow.secret" . }}
 {{- $fullname := (include "qmig.app.fullname" .)}}
-{{- $ingresshost := .Values.app.ingress.host | default "Undefined" }}
+{{- $ingresshost := .Values.ingress.host | default "Undefined" }}
 
 ** Please be patient while the chart is being deployed **
 
@@ -15,7 +15,7 @@ APP VERSION: {{ .Chart.AppVersion }}
 QMigrator Installed !!
 🎉 ⭐ 🎉 ⭐ 🎉 ⭐ 🎉
 
-{{- if .Values.app.ingress.enabled }}
+{{- if .Values.ingress.enabled }}
 
 QMigrator can be accessed via port {{ .Values.app.service.port }} on the following DNS name from within your cluster:
 
@@ -26,7 +26,7 @@ To connect to Airflow from outside the cluster, perform the following steps:
 1. Get the QMigrator URL and associate its hostname to your cluster external IP:
 
     export CLUSTER_IP=$(minikube ip) # On Minikube. Use: `kubectl cluster-info` on others K8s clusters
-    echo "QMigrator URL: http{{ if hasKey .Values.app.ingress "tls" }}s{{ end }}://{{ $ingresshost }}"
+    echo "QMigrator URL: http{{ if hasKey .Values.ingress "tls" }}s{{ end }}://{{ $ingresshost }}"
     echo "$CLUSTER_IP  {{ $ingresshost }}" | sudo tee -a /etc/hosts
 
 {{- else if eq .Values.app.service.type "ClusterIP" }}

@@ -78,14 +78,18 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 ### Globals
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
-| nameOverride | String to partially override name template (will maintain the release name) | "" | 
+| nameOverride | String to partially override name template (will maintain the release name) | "" |
 | clusterDomain | Kubernetes Cluster Domain | "cluster.local" | 
 | secret.secretName | Name for project secret | "" (name: qmig-secret) | 
+| secret.annotations | Annotations for secrets | {} | 
+| secret.labels | Labels for secrets | {} | 
 | secret.data.PROJECT_ID | ID of project | null | 
 | secret.data.PROJECT_NAME | Name of project | null | 
 | secret.data.POSTGRES_PASSWORD | Admin Password for metadata DB | null | 
 | secret.data.REDIS_PASS | Admin Password for Cache | null | 
 | imageCredentials.secretName | Name for docker secret | "" (name: qmig-docker) | 
+| imageCredentials.annotations | Annotations for docker secret | {} | 
+| imageCredentials.labels | Labels for docker secret | {} | 
 | imageCredentials.data.registry | Server/Registry host. | qmigrator.azurecr.io | 
 | imageCredentials.data.username | Username for given docker host | null | 
 | imageCredentials.data.password | Password for given docker host | null | 
@@ -95,6 +99,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | shared.persistentVolume.enabled | If false, use emptyDir | true | 
 | shared.persistentVolume.accessModes | How should the volume be accessible in App | ReadWriteMany | 
 | shared.persistentVolume.annotations | Persistent Volume Claim annotations | {} | 
+| shared.persistentVolume.labels | Labels for docker persistentVolume | {} | 
 | shared.persistentVolume.existingClaim | Name of PVC created manually before volume | "" | 
 | shared.persistentVolume.subPath | Subdirectory of data Persistent Volume to mount | "" | 
 | shared.persistentVolume.size | Persistent Volume size | 5Gi | 
@@ -113,12 +118,22 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | ingressController.webhookImage.tag | Ingress controller image tag/version | "v20231011-8b53cabe0" | 
 | ingressController.imagePullSecrets | Ingress Controller component pull secrets | {} | 
 | ingressController.isDefaultClass | Set Ingress class as default to cluster | true | 
+### Ingress
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| ingress.enabled | Enable ingress record generation | true | 
+| ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "nginx" | 
+| ingress.annotations | Additional annotations for the Ingress resource | {} | 
+| ingress.labels | Add labels for the Ingress | {} | 
+| ingress.host | Default host for the ingress record | "" | 
+| ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
 ### Service Account
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
 | serviceAccount.create | Enable creation of ServiceAccount | true | 
 | serviceAccount.name | The name of the ServiceAccount to use | "" (name: qmig-opr) | 
 | serviceAccount.annotations | Additional custom annotations for the ServiceAccount | {} | 
+| serviceAccount.labels | Labels for ServiceAccount | {} | 
 | rbac.create | Create Role and RoleBinding | true | 
 ### App Components
 | Property | Description | Default | 
@@ -138,14 +153,10 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | app.tolerations | Tolerations for App Component pods assignment | {} | 
 | app.affinity | Affinity for App Component pods assignment (evaluated as a template) | {} | 
 | app.nodeSelector | Node labels for App Component pods assignment | {} | 
+| app.labels | Labels for App Component | {} | 
 | app.service.annotations | Additional custom annotations for App Component service | {} | 
 | app.service.type | App Component service type | ClusterIP | 
 | app.service.port | App Component service HTTP port | 4200 | 
-| app.ingress.enabled | Enable ingress record generation | true | 
-| app.ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
-| app.ingress.annotations | Additional annotations for the Ingress resource | {} | 
-| app.ingress.host | Default host for the ingress record | "" | 
-| app.ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
 | app.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
 | app.autoscaling.enabled | Whether to enable horizontal pod autoscaler | true | 
 | app.autoscaling.minReplicas | Configure a minimum amount of pods | 1 | 
@@ -170,16 +181,12 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | eng.tolerations | Tolerations for Engine component pods assignment | {} | 
 | eng.affinity | Affinity for Engine component pods assignment (evaluated as a template) | {} | 
 | eng.nodeSelector | Node labels for Engine component pods assignment | {} | 
+| eng.labels | Labels for Engine Component | {} | 
 | eng.service.annotations | Additional custom annotations for Engine component service | {} | 
 | eng.service.type | Engine component service type | ClusterIP | 
 | eng.service.port | Engine component service HTTP port | 8080 | 
 | eng.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Engine component pods | [] | 
 | eng.extraVolumes | Optionally specify an extra list of additional volumes for all the Engine component pods | [] | 
-| eng.ingress.enabled | Enable ingress record generation | true | 
-| eng.ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
-| eng.ingress.annotations | Additional annotations for the Ingress resource | {} | 
-| eng.ingress.host | Default host for the ingress record | "" | 
-| eng.ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
 | eng.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
 | eng.autoscaling.enabled | Whether to enable horizontal pod autoscaler | true | 
 | eng.autoscaling.minReplicas | Configure a minimum amount of pods | 1 | 
@@ -205,11 +212,12 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | db.tolerations | Tolerations for DB component pods assignment | {} | 
 | db.affinity | Affinity for DB component pods assignment (evaluated as a template) | {} | 
 | db.nodeSelector | Node labels for DB component pods assignment | {} | 
+| db.labels | Labels for DB Component | {} | 
 | db.initContainers.image.repository | Load DB image repository | "qmigrator.azurecr.io/qmigdb-ini" | 
 | db.initContainers.image.tag | Load DB image tag/version | "1164" | 
 | db.initContainers.resources | Set Init container requests and limits for different resources like CPU or memory | 
 | db.persistentVolume.enabled | If false, use emptyDir | true | 
-| db.persistentVolume.accessModes | How should the volume be accessible in App | ReadWriteOnce | 
+| db.persistentVolume.accessModes | How should the volume accessible in App | ReadWriteOnce | 
 | db.persistentVolume.annotations | Persistent Volume Claim annotations | {} | 
 | db.persistentVolume.existingClaim | Name of PVC created manually before volume | "" | 
 | db.persistentVolume.subPath | Subdirectory of data Persistent Volume to mount | "" | 
@@ -225,8 +233,8 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | db.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the DB component pods | [] | 
 | db.extraVolumes | Optionally specify an extra list of additional volumes for all the DB component pods | [] | 
 ### Cache Components
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | msg.name | Name for Cache component | "msg" | 
 | msg.replicas | Number of Cache component replicas | 1 | 
 | msg.image.repository | Cache component image repository | "eqalpha/keydb" | 
@@ -242,6 +250,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | msg.tolerations | Tolerations for Cache component pods assignment | {} | 
 | msg.affinity | Affinity for Cache component pods assignment (evaluated as a template) | {} | 
 | msg.nodeSelector | Node labels for Cache component pods assignment | {} | 
+| msg.labels | Labels for Cache Component | {} | 
 | msg.persistentVolume.enabled | If false, use emptyDir | true | 
 | msg.persistentVolume.accessModes | How should the volume be accessible in App | ReadWriteOnce | 
 | msg.persistentVolume.annotations | Persistent Volume Claim annotations | {} | 
@@ -261,8 +270,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | msg.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Cache component pods | [] | 
 | msg.extraVolumes | Optionally specify an extra list of additional volumes for all the Cache component pods | [] | 
 ### Assessment
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| asses.enabled | Enable Assessment | true | 
 | asses.name | Name for Assessment | "asses" | 
 | asses.image.repository | Assessment image repository | "qmigrator.azurecr.io/webassotp" | 
 | asses.image.tag | Assessment image tag/version | "992" | 
@@ -275,6 +285,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | asses.tolerations | Tolerations for Assessment pods assignment | {} | 
 | asses.affinity | Affinity for Assessment pods assignment (evaluated as a template) | {} | 
 | asses.nodeSelector | Node labels for Assessment pods assignment | {} | 
+| asses.labels | Labels for Assessment | {} | 
 | asses.schedule | Specifies the cron job schedule using the standard cron syntax | "*/10 * * * *" | 
 | asses.failedJobsHistoryLimit | How many failed executions to track in history. | 2 | 
 | asses.successfulJobsHistoryLimit | How many successful executions to track in history. | 3 | 
@@ -289,8 +300,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | asses.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Assessment pods | [] | 
 | asses.extraVolumes | Optionally specify an extra list of additional volumes for all the Assessment pods | [] | 
 ### Conversion
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| convs.enabled | Enable Conversion | true | 
 | convs.name | Name for Conversion | "convs" | 
 | convs.image.repository | Conversion image repository | "qmigrator.azurecr.io/webconvotp" | 
 | convs.image.tag | Conversion image tag/version | "993" | 
@@ -303,6 +315,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | convs.tolerations | Tolerations for Conversion pods assignment | {} | 
 | convs.affinity | Affinity for Conversion pods assignment (evaluated as a template) | {} | 
 | convs.nodeSelector | Node labels for Conversion pods assignment | {} | 
+| convs.labels | Labels for Conversion | {} | 
 | convs.schedule | Specifies the cron job schedule using the standard cron syntax | "*/10 * * * *" | 
 | convs.failedJobsHistoryLimit | How many failed executions to track in history. | 2 | 
 | convs.successfulJobsHistoryLimit | How many successful executions to track in history. | 2 | 
@@ -317,8 +330,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | convs.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Conversion pods | [] | 
 | convs.extraVolumes | Optionally specify an extra list of additional volumes for all the Conversion pods | [] | 
 ### Migration
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| migrt.enabled | Enable Migration | true | 
 | migrt.name | Name for Migration | "migrt" | 
 | migrt.image.repository | Migration image repository | "qmigrator.azurecr.io/webdmotp" | 
 | migrt.image.tag | Migration image tag/version | "994" | 
@@ -331,6 +345,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | migrt.tolerations | Tolerations for Migration pods assignment | {} | 
 | migrt.affinity | Affinity for Migration pods assignment (evaluated as a template) | {} | 
 | migrt.nodeSelector | Node labels for Migration pods assignment | {} | 
+| migrt.labels | Labels for Migration | {} | 
 | migrt.schedule | Specifies the cron job schedule using the standard cron syntax | "*/10 * * * *" | 
 | migrt.failedJobsHistoryLimit | How many failed executions to track in history. | 2 | 
 | migrt.successfulJobsHistoryLimit | How many successful executions to track in history. | 2 | 
@@ -345,8 +360,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | migrt.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Migration pods | [] | 
 | migrt.extraVolumes | Optionally specify an extra list of additional volumes for all the Migration pods | [] | 
 ### Testing
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| tests.enabled | Enable Testing | true | 
 | tests.name | Name for Testing | "tests" | 
 | tests.image.repository | Testing image repository | "qmigrator.azurecr.io/webtestotp" | 
 | tests.image.tag | Testing image tag/version | "971" | 
@@ -359,6 +375,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | tests.tolerations | Tolerations for Testing pods assignment | {} | 
 | tests.affinity | Affinity for Testing pods assignment (evaluated as a template) | {} | 
 | tests.nodeSelector | Node labels for Testing pods assignment | {} | 
+| tests.labels | Labels for Testing | {} | 
 | tests.schedule | Specifies the cron job schedule using the standard cron syntax | "*/10 * * * *" | 
 | tests.failedJobsHistoryLimit | How many failed executions to track in history. | 2 | 
 | tests.successfulJobsHistoryLimit | How many successful executions to track in history. | 2 | 
@@ -373,8 +390,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | tests.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Testing pods | [] | 
 | tests.extraVolumes | Optionally specify an extra list of additional volumes for all the Testing pods | [] | 
 ### Performance
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| perfs.enabled | Enable Performance | true | 
 | perfs.name | Name for Performance | "perfs" | 
 | perfs.image.repository | Performance image repository | "qmigrator.azurecr.io/webperfotp" | 
 | perfs.image.tag | Performance image tag/version | "985" | 
@@ -387,6 +405,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | perfs.tolerations | Tolerations for Performance pods assignment | {} | 
 | perfs.affinity | Affinity for Performance pods assignment (evaluated as a template) | {} | 
 | perfs.nodeSelector | Node labels for Performance pods assignment | {} | 
+| perfs.labels | Labels for Performance | {} | 
 | perfs.schedule | Specifies the cron job schedule using the standard cron syntax | "*/10 * * * *" | 
 | perfs.failedJobsHistoryLimit | How many failed executions to track in history. | 2 | 
 | perfs.successfulJobsHistoryLimit | How many successful executions to track in history. | 2 | 
@@ -401,9 +420,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | perfs.extraVolumeMounts | Optionally specify an extra list of additional volumeMounts for all the Performance pods | [] | 
 | perfs.extraVolumes | Optionally specify an extra list of additional volumes for all the Performance pods | [] | 
 ### Airflow Global
-| Property | Description | Default |
-| :--- | :--- | :--- |
-| airflow.enabled | Name for Airflow | false | 
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| airflow.enabled | Enable Airflow | false | 
 | airflow.name | Name for Airflow | "airflow" | 
 | airflow.uid | User id for Airflow | "106665" | 
 | airflow.gid | group id for Airflow | "106966" | 
@@ -418,25 +437,24 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.podTemplate | is a templated string containing the contents of `pod_template_file.yaml` used for KubernetesExecutor workers | ~ | 
 | airflow.webserverConfig | string (can be templated) will be mounted into the Airflow Webserver | ~ | 
 | airflow.securityContexts.pod | Detailed default security context for Airflow Pods | {} | 
-| airflow.securityContexts.container | Detailed default security context for Airflow Container | {} | 
+| airflow.securityContexts.containers | Detailed default security context for Airflow Container | {} | 
 | airflow.tolerations | Tolerations for Airflow pods | {} | 
 | airflow.affinity | Affinity for Airflow pods (evaluated as a template) | {} | 
 | airflow.nodeSelector | Node labels for Airflow pods | {} | 
-| airflow.ingress.enabled | Enable ingress record generation | true | 
-| airflow.ingress.className | IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) | "" (From Kubernetes) | 
-| airflow.ingress.annotations | Additional annotations for the Ingress resource | {} | 
-| airflow.ingress.host | Default host for the ingress record | "" | 
-| airflow.ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
+| airflow.labels | Labels for Airflow | {} | 
 | airflow.env | Add extra environment variables for the Airflow pods | [] | 
 | airflow.envSecret | List of secrets with extra environment variables for all the component pods | [] | 
+#### Airflow Secret
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | airflow.secret.secretName | Name for project secret | "" (name: qmig-air-secret) | 
 | airflow.secret.data.airflow_secret_key | Random generated key for webserver | null | 
 | airflow.secret.data.airflow_fernet_key | Random generated key for airflow | null | 
 | airflow.secret.data.airflow_password | Airflow login password | null | 
 | airflow.secret.data.connection | Connection string for Airflow metadata DB | null | 
-### Airflow Webserver
-| Property | Description | Default |
-| :--- | :--- | :--- |
+#### Airflow Webserver
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | airflow.webserver.replicas | Number of Airflow Webserver replicas | 1 | 
 | airflow.webserver.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
 | airflow.webserver.annotations | Add extra annotations to the Airflow Webserver | {} | 
@@ -452,9 +470,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.webserver.service.annotations | Additional custom annotations for Airflow Webserver service | {} | 
 | airflow.webserver.service.type | Airflow Webserver service type | "ClusterIP" | 
 | airflow.webserver.service.port | Airflow Webserver service HTTP port | 8080 | 
-### Airflow Scheduler
-| Property | Description | Default |
-| :--- | :--- | :--- |
+#### Airflow Scheduler
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | airflow.scheduler.replicas | Number of Airflow Scheduler replicas | 1 | 
 | airflow.scheduler.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
 | airflow.scheduler.annotations | Add extra annotations to the Airflow Scheduler | {} | 
@@ -467,27 +485,27 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.scheduler.command | Command to use when running the Airflow scheduler | ~ | 
 | airflow.scheduler.args | Args to use when running the Airflow scheduler | ["bash", "-c", "exec airflow scheduler"] | 
 | airflow.scheduler.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
-### Airflow Worker
-| Property | Description | Default |
-| :--- | :--- | :--- |
+#### Airflow Worker
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | airflow.worker.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
 | airflow.worker.annotations | Add extra annotations to the Airflow Worker | {} | 
 | airflow.worker.podAnnotations | Add extra Pod annotations to the Airflow Worker pods | {} | 
 | airflow.worker.securityContexts.pod | default security context for Worker pods | {} | 
 | airflow.worker.securityContexts.container | default security context for Worker containers | {} | 
 | airflow.worker.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
-### Init-container to wait migration
-| Property | Description | Default |
-| :--- | :--- | :--- |
-| airflow.waitForMigrations.enabled | Whether to create init container to wait for db migrations | true | 
+#### Init-container to wait migration
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| airflow.waitForMigrations.enabled | Whether to create an init container to wait for db migrations | true | 
 | airflow.waitForMigrations.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
 | airflow.waitForMigrations.annotations | Add extra annotations to the waitForMigrations | {} | 
 | airflow.waitForMigrations.podAnnotations | Add extra Pod annotations to the waitForMigrations pods | {} | 
 | airflow.waitForMigrations.securityContexts.container | default security context for waitForMigrations containers | {} | 
 | airflow.waitForMigrations.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
 ### Airflow Create User Job
-| Property | Description | Default |
-| :--- | :--- | :--- |
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
 | airflow.createUserJob.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
 | airflow.createUserJob.annotations | Add extra annotations to the createUserJob | {} | 
 | airflow.createUserJob.podAnnotations | Add extra Pod annotations to the createUserJob pods | {} | 
@@ -495,12 +513,12 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.createUserJob.securityContexts.container | default security context for createUserJob containers | {} | 
 | airflow.createUserJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
 ### Airflow DB Migration Job
-| Property | Description | Default |
-| :--- | :--- | :--- |
-| airflow.migrateDatabaseJob.enabled | Whether to create init container to wait for db migrations | true | 
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| airflow.migrateDatabaseJob.enabled | Whether to create an init container to wait for db migrations | true | 
 | airflow.migrateDatabaseJob.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
 | airflow.migrateDatabaseJob.annotations | Add extra annotations to the migrateDatabaseJob | {} | 
-| airflow.migrateDatabaseJob.podAnnotations | Add extra Pod annotations to the migrateDatabaseJob pods | {} | 
-| airflow.migrateDatabaseJob.securityContexts.pod | default security context for migrateDatabaseJob pods | {} | 
+| airflow.migrateDatabaseJob.podAnnotations | Add extra Pod annotations to the migrateDatabaseJob pod | {} | 
+| airflow.migrateDatabaseJob.securityContexts.pod | default security context for migrateDatabaseJob pod | {} | 
 | airflow.migrateDatabaseJob.securityContexts.container | default security context for migrateDatabaseJob containers | {} | 
 | airflow.migrateDatabaseJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 

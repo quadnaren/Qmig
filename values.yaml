@@ -125,6 +125,30 @@ ingressController:
   ## @param ingressController.isDefaultClass Set Ingress class as default to cluster Default: true
   isDefaultClass: true
 
+## Qmigrator ingress parameters
+## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  ## @param ingress.enabled Enable ingress record generation Default: true
+  enabled: true
+  ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
+  ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
+  ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
+  className: "nginx"
+  ## @param ingress.annotations Additional annotations for the Ingress resource Default: {}
+  annotations: {}
+  ## @param ingress.labels Add labels for the Ingress Default: {}
+  labels: {}
+  ## @param ingress.host Default host for the ingress record Default: ""
+  host: ""
+  ## @param ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+  ## e.g:
+  ## tls:
+  ## - hosts:
+  ##     - app.local
+  ##   secretName: app.local-tls
+
+
 ## Service account for QMigrator pods to use.
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:
@@ -207,27 +231,6 @@ app:
     type: ClusterIP
     ## @param app.service.port App Component service HTTP port Default: 4200
     port: 4200
-
-  ## App Component ingress parameters
-  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
-  ingress:
-    ## @param app.ingress.enabled Enable ingress record generation Default: true
-    enabled: true
-    ## @param app.ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
-    ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
-    ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
-    className: ""
-    ## @param app.ingress.annotations Additional annotations for the Ingress resource Default: {}
-    annotations: {}
-    ## @param app.ingress.host Default host for the ingress record Default: ""
-    host: ""
-    ## @param app.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
-    ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
-    ## e.g:
-    ## tls:
-    ## - hosts:
-    ##     - app.local
-    ##   secretName: app.local-tls
 
   ## @param app.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
@@ -315,29 +318,8 @@ eng:
  
   ## @param eng.extraVolumeMounts Optionally specify an extra list of additional volumeMounts for all the Engine component pods Default: []
   extraVolumeMounts: []
-  ## @param emg.extraVolumes Optionally specify an extra list of additional volumes for all the Engine component pods Default: []
+  ## @param eng.extraVolumes Optionally specify an extra list of additional volumes for all the Engine component pods Default: []
   extraVolumes: []
-
-  ## Engine component ingress parameters
-  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
-  ingress:
-    ## @param eng.ingress.enabled Enable ingress record generation Default: true
-    enabled: true
-    ## @param eng.ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
-    ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
-    ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
-    className: ""
-    ## @param eng.ingress.annotations Additional annotations for the Ingress resource Default: {}
-    annotations: {}
-    ## @param eng.ingress.host Default host for the ingress record Default: ""
-    host: ""
-    ## @param eng.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
-    ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
-    ## e.g:
-    ## tls:
-    ## - hosts:
-    ##     - eng.local
-    ##   secretName: eng.local-tls
 
   ## @param eng.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
@@ -1232,27 +1214,6 @@ airflow:
 
   ## @param airflow.labels Labels for Airflow Default: {}
   labels: {}
-
-  ## Airflow ingress parameters
-  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
-  ingress:
-    ## @param airflow.ingress.enabled Enable ingress record generation Default: true
-    enabled: true
-    ## @param airflow.ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
-    ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
-    ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
-    className: ""
-    ## @param airflow.ingress.annotations Additional annotations for the Ingress resource Default: {}
-    annotations: {}
-    ## @param airflow.ingress.host Default host for the ingress record Default: ""
-    host: ""
-    ## @param airflow.ingress.tls TLS configuration for additional hostname(s) to be covered with this ingress record Default: {}
-    ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
-    ## e.g:
-    ## tls:
-    ## - hosts:
-    ##     - airflow.local
-    ##   secretName: airflow.local-tls
 
   ## @param airflow.env Add extra environment variables for the Airflow pods Default: []
   ## Example:
