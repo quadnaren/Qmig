@@ -236,10 +236,10 @@ app:
   resources:
     requests:
       cpu: 100m
-      memory: 300Mi
+      memory: 200Mi
     limits:
-      cpu: 300m
-      memory: 600Mi
+      cpu: 200m
+      memory: 400Mi
 
   ## Enable HorizontalPodAutoscaler for App Component pods
   ## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
@@ -259,7 +259,7 @@ app:
 ## @param eng.name Name for Engine component Default: "eng"
 ## @param eng.replicas Number of Engine component replicas Default: 1
 ## @param eng.image.repository Engine component image repository Default: "qmigrator.azurecr.io/qubeeng"
-## @param eng.image.tag Engine component image tag/version Default: "q836"
+## @param eng.image.tag Engine component image tag/version Default: "q1044"
 ## @param eng.image.pullPolicy Engine component pull policy Default: "IfNotPresent"
 ## @param eng.imagePullSecrets Engine component pull secrets Default: {}
 eng:
@@ -268,9 +268,9 @@ eng:
   image:
     repository: qmigrator.azurecr.io/qubeeng
     pullPolicy: IfNotPresent
-    tag: "q836"
+    tag: "q1044"
 
-  imagePullSecrets: 
+  imagePullSecrets: {}
 
   ## Configure extra options for Engine component containers' liveness and readiness
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
@@ -324,11 +324,11 @@ eng:
   ## @param eng.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
     requests:
-      cpu: 200m
-      memory: 300Mi
-    limits:
       cpu: 400m
-      memory: 600Mi
+      memory: 400Mi
+    limits:
+      cpu: 800m
+      memory: 800Mi
 
   ## Enable HorizontalPodAutoscaler for Engine component pods
   ## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
@@ -408,20 +408,20 @@ db:
 
   ## Initialize the container of DB to load the db components
   ## @param db.initContainers.image.repository Load DB image repository Default: "qmigrator.azurecr.io/qmigdb-ini"
-  ## @param db.initContainers.image.tag Load DB image tag/version Default: "1164"
+  ## @param db.initContainers.image.tag Load DB image tag/version Default: "1181-ora2pg"
   initContainer:
     loadDB:
       image:
         repository: qmigrator.azurecr.io/qmigdb-ini
-        tag: "1164"
+        tag: "1181-ora2pg"
       ## @param db.initContainers.resources Set Init container requests and limits for different resources like CPU or memory
       resources:
         requests:
-          cpu: 200m
-          memory: 300Mi
+          cpu: 100m
+          memory: 200Mi
         limits:
-          cpu: 400m
-          memory: 600Mi
+          cpu: 200m
+          memory: 400Mi
       imagePullSecrets: {}
 
   ## @param db.persistentVolume.enabled If false, use emptyDir Default: true
@@ -482,10 +482,10 @@ db:
   resources:
     requests:
       cpu: 200m
-      memory: 600Mi
+      memory: 500Mi
     limits:
       cpu: 400m
-      memory: 800Mi
+      memory: 1000Mi
 
   ## @param db.env Add extra environment variables for the DB component pods Default: [JDBC_PARAMS]
   ## Example:
@@ -655,7 +655,7 @@ msg:
 ## @param asses.enabled Enable Assessment Default: true
 ## @param asses.name Name for Assessment Default: "asses"
 ## @param asses.image.repository Assessment image repository Default: "qmigrator.azurecr.io/webassotp"
-## @param asses.image.tag Assessment image tag/version Default: "992"
+## @param asses.image.tag Assessment image tag/version Default: "1325"
 ## @param asses.image.pullPolicy Assessment pull policy Default: "IfNotPresent"
 ## @param asses.imagePullSecrets Assessment pull secrets Default: {}
 asses:
@@ -664,7 +664,7 @@ asses:
   image:
     repository: qmigrator.azurecr.io/webassotp
     pullPolicy: IfNotPresent
-    tag: "992"
+    tag: "1325"
 
   imagePullSecrets: {}
 
@@ -711,11 +711,11 @@ asses:
   ## @param asses.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
     requests:
+      cpu: 150m
+      memory: 300Mi
+    limits:
       cpu: 300m
       memory: 600Mi
-    limits:
-      cpu: 600m
-      memory: 1200Mi
 
   ## @param asses.env Add extra environment variables for the Assessment pods Default: []
   ## Example:
@@ -740,7 +740,7 @@ asses:
 ## @param convs.enabled Enable Conversion Default: true
 ## @param convs.name Name for Conversion Default: "convs"
 ## @param convs.image.repository Conversion image repository Default: "qmigrator.azurecr.io/webconvotp"
-## @param convs.image.tag Conversion image tag/version Default: "993"
+## @param convs.image.tag Conversion image tag/version Default: "1333"
 ## @param convs.image.pullPolicy Conversion pull policy Default: "IfNotPresent"
 ## @param convs.imagePullSecrets Conversion pull secrets Default: {}
 convs:
@@ -749,7 +749,7 @@ convs:
   image:
     repository: qmigrator.azurecr.io/webconvotp
     pullPolicy: IfNotPresent
-    tag: "993"
+    tag: "1333"
 
   imagePullSecrets: {}
 
@@ -796,11 +796,11 @@ convs:
   ## @param convs.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
     requests:
+      cpu: 150m
+      memory: 300Mi
+    limits:
       cpu: 300m
       memory: 600Mi
-    limits:
-      cpu: 600m
-      memory: 1200Mi
 
   ## @param convs.env Add extra environment variables for the Conversion pods Default: []
   ## Example:
@@ -826,7 +826,7 @@ convs:
 ## @param migrt.enabled Enable Migration Default: true
 ## @param migrt.name Name for Migration Default: "migrt"
 ## @param migrt.image.repository Migration image repository Default: "qmigrator.azurecr.io/webdmotp"
-## @param migrt.image.tag Migration image tag/version Default: "994"
+## @param migrt.image.tag Migration image tag/version Default: "1321"
 ## @param migrt.image.pullPolicy Migration pull policy Default: "IfNotPresent"
 ## @param migrt.imagePullSecrets Migration pull secrets Default: {}
 migrt:
@@ -835,7 +835,7 @@ migrt:
   image:
     repository: qmigrator.azurecr.io/webdmotp
     pullPolicy: IfNotPresent
-    tag: "994"
+    tag: "1321"
 
   imagePullSecrets: {}
 
@@ -882,11 +882,11 @@ migrt:
   ## @param migrt.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
     requests:
+      cpu: 150m
+      memory: 300Mi
+    limits:
       cpu: 300m
       memory: 600Mi
-    limits:
-      cpu: 600m
-      memory: 1200Mi
 
   ## @param migrt.env Add extra environment variables for the Migration pods Default: []
   ## Example:
@@ -968,11 +968,11 @@ tests:
   ## @param tests.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
     requests:
+      cpu: 150m
+      memory: 300Mi
+    limits:
       cpu: 300m
       memory: 600Mi
-    limits:
-      cpu: 600m
-      memory: 1200Mi
 
   ## @param tests.env Add extra environment variables for the Testing pods Default: []
   ## Example:
@@ -1054,11 +1054,11 @@ perfs:
   ## @param perfs.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
   resources:
     requests:
+      cpu: 150m
+      memory: 300Mi
+    limits:
       cpu: 300m
       memory: 600Mi
-    limits:
-      cpu: 600m
-      memory: 1200Mi
 
   ## @param perfs.env Add extra environment variables for the Performance pods Default: []
   ## Example:
@@ -1086,14 +1086,14 @@ perfs:
 ## @param airflow.uid User id for Airflow Default: "106665"
 ## @param airflow.gid group id for Airflow Default: "106966"
 ## @param airflow.image.repository Airflow image repository Default: "qmigrator.azurecr.io/qmigair"
-## @param airflow.image.tag Airflow image tag/version Default: "2.8.4-ofjv-lvs"
+## @param airflow.image.tag Airflow image tag/version Default: "2.8.4-ofmini"
 ## @param airflow.image.pullPolicy Airflow pull policy Default: "IfNotPresent"
 ## @param airflow.imagePullSecrets Airflow pull secrets Default: {}
 airflow:
   enabled: false
   name: "airflow"
-  uid: 106665
-  gid: 106966
+  uid: 5000
+  gid: 4000
 
   ## Enable RBAC (default on most clusters these days)
   ## Role Based Access
@@ -1106,7 +1106,7 @@ airflow:
   image:
     repository: qmigrator.azurecr.io/qmigair
     pullPolicy: IfNotPresent
-    tag: "2.8.4-ofjv-lvs"
+    tag: "2.8.4-ofmini"
 
   imagePullSecrets: {}
 
@@ -1117,7 +1117,7 @@ airflow:
   ## @param airflow.config Config settings to go into the mounted airflow.cfg Default:
   config:
     api:
-      auth_backends: airflow.api.auth.backend.basic_auth
+      auth_backends: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
     celery:
       worker_concurrency: 16
     celery_kubernetes_executor:
@@ -1131,8 +1131,8 @@ airflow:
       executor: KubernetesExecutor
       load_examples: False
       remote_logging: False
-      parallelism: 64
-      default_pool_task_slot_count: 200
+      parallelism: 128
+      default_pool_task_slot_count: 256
     database: 
       load_default_connections: False
     kubernetes: 
@@ -1145,7 +1145,7 @@ airflow:
       worker_container_tag: '{{ .Values.airflow.image.tag }}'
     kubernetes_executor: 
       multi_namespace_mode: False
-      namespace: qmig-ns
+      namespace: '{{ .Release.Namespace }}'
       pod_template_file: '{{ include "qmig.airflow.template" . }}/pod_template_file.yaml'
       worker_container_repository: '{{ .Values.airflow.image.repository }}'
       worker_container_tag: '{{ .Values.airflow.image.tag }}'
@@ -1165,6 +1165,7 @@ airflow:
       statsd_on: False
       statsd_port: 9125
       statsd_prefix: airflow
+      max_tis_per_query: 0
     triggerer: 
       default_capacity: 1000
     webserver: 
@@ -1278,11 +1279,11 @@ airflow:
     ## @param airflow.webserver.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources:
       requests:
-        cpu: 100m
-        memory: 300Mi
-      limits:
-        cpu: 300m
+        cpu: 400m
         memory: 600Mi
+      limits:
+        cpu: 800m
+        memory: 1200Mi
 
     ## Airflow Webserver service parameters
     service:
@@ -1327,11 +1328,11 @@ airflow:
     ## @param airflow.scheduler.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources:
       requests:
-        cpu: 100m
-        memory: 300Mi
+        cpu: 400m
+        memory: 700Mi
       limits:
-        cpu: 300m
-        memory: 600Mi
+        cpu: 800m
+        memory: 1400Mi
 
   ## Airflow Worker
   worker:
@@ -1351,11 +1352,11 @@ airflow:
     ## @param airflow.worker.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
     resources:
       requests:
-        cpu: 100m
-        memory: 300Mi
+        cpu: 400m
+        memory: 700Mi
       limits:
-        cpu: 300m
-        memory: 600Mi
+        cpu: 800m
+        memory: 1400Mi
 
   ## Airflow WaitForMigrations
   waitForMigrations:
@@ -1376,10 +1377,10 @@ airflow:
     resources:
       requests:
         cpu: 100m
-        memory: 300Mi
+        memory: 250Mi
       limits:
         cpu: 300m
-        memory: 600Mi
+        memory: 500Mi
 
   ## Airflow create user job settings
   createUserJob:
@@ -1400,10 +1401,10 @@ airflow:
     resources:
       requests:
         cpu: 100m
-        memory: 300Mi
+        memory: 250Mi
       limits:
         cpu: 300m
-        memory: 600Mi
+        memory: 500Mi
   
   # Airflow database migration job settings
   migrateDatabaseJob:
@@ -1426,7 +1427,7 @@ airflow:
     resources:
       requests:
         cpu: 100m
-        memory: 300Mi
+        memory: 250Mi
       limits:
         cpu: 300m
-        memory: 600Mi
+        memory: 500Mi
