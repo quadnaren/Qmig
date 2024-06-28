@@ -1,27 +1,28 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: "disk-csi"
-provisioner: k8s.io/minikube-hostpath
+  name: "file-csi"
+provisioner: efs.csi.aws.com
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
 ---
-# Source: qmig/templates/air/air-pv.yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: qmig-shared
 spec:
   capacity:
-    storage: "5Gi"
+    storage: 5Gi
+  volumeMode: Filesystem
   accessModes:
     - ReadWriteMany
-  storageClassName: disk-csi
+  storageClassName: "file-csi"
   persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: /hostpc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{FileSystemId}}
 ---
-# Source: qmig/templates/air/air-pvc.yaml
+# Source: qmig/templates/app/app-pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -32,7 +33,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: "disk-csi"
+  storageClassName: "file-csi"
   volumeName: qmig-shared
   resources:
     requests:

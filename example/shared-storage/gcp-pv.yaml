@@ -1,12 +1,4 @@
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: "disk-csi"
-provisioner: docker.io/hostpath
-reclaimPolicy: Retain
-volumeBindingMode: WaitForFirstConsumer
----
-# Source: qmig/templates/air/air-pv.yaml
+# Source: qmig/templates/app/app-pv.yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -16,12 +8,16 @@ spec:
     storage: "5Gi"
   accessModes:
     - ReadWriteMany
-  storageClassName: disk-csi
   persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: {{LOCAL_PATH}}
+  storageClassName: "file-csi"
+  mountOptions:
+    - implicit-dirs
+  csi:
+    driver: gcsfuse.csi.storage.gke.io
+    volumeHandle: {{BUCKET_NAME}}
+    readOnly: false
 ---
-# Source: qmig/templates/air/air-pvc.yaml
+# Source: qmig/templates/app/app-pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -32,7 +28,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: "disk-csi"
+  storageClassName: "file-csi"
   volumeName: qmig-shared
   resources:
     requests:

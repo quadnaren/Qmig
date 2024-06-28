@@ -26,9 +26,7 @@ helm install <name> qmigrator/qmig \
 ## Ingress Installation
 - Qmigrator uses ingress to expose the application
 - You may use existing ingress if present in the cluster by updating the properties of
-  - app.ingress
-  - eng.ingress
-  - airflow.ingress
+  - ingress
 <br>OR 
 - Enable the flag of Ingress controller installation within the Helm chart
 ```
@@ -62,17 +60,33 @@ helm install <name> qmigrator/qmig -f values.yaml
 ```
 
 ## Examples
-### Docker Desktop shared volume (Win)
-- Use on Docker Desktop Kubernetes, LocalPath as Windows device path
-> See the example/pv-docker-desktop.yaml
+> [!NOTE]
+Check more examples from a folder in the repository
 
-### Minikube shared volume (Linux, Win, MacOS, etc.)
+### Docker Desktop volume (Win)
+- Use on Docker Desktop Kubernetes, LocalPath as Windows device path
+
+### Minikube volume (Linux, Win, MacOS, etc.)
 - Mount the local path while starting the minikube
 - eg. /hostpc on minikube points to {LOCAL_PATH} of device
 ```
 minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 ```
-> See the example/pv-minikube.yaml
+
+### Azure Cloud volume
+- Fileshare in Azure can be mounted on Kubernetes
+- Required secret key to access & mount
+- See more: https://learn.microsoft.com/en-us/azure/aks/azure-csi-files-storage-provision
+
+### Google Cloud volume
+- GSC bucket can be mounted on Kubernetes, using gscfuse driver
+- Service account required with permission to access & attach
+- See more: https://cloud.google.com/kubernetes-engine/docs/how-to/persistent-volumes/cloud-storage-fuse-csi-driver#create-persistentvolume
+
+### AWS Cloud volume
+- Shared system in AWS using EFS can be mounted
+- User & ODIC based login in AWS cluster can use & attach
+- See more: https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/examples/kubernetes/static_provisioning/README.md
 
 ## Values.YAML
 ### Globals
@@ -503,7 +517,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.waitForMigrations.podAnnotations | Add extra Pod annotations to the waitForMigrations pods | {} | 
 | airflow.waitForMigrations.securityContexts.container | default security context for waitForMigrations containers | {} | 
 | airflow.waitForMigrations.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
-### Airflow Create User Job
+#### Airflow Create User Job
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
 | airflow.createUserJob.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
@@ -512,7 +526,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.createUserJob.securityContexts.pod | default security context for createUserJob pods | {} | 
 | airflow.createUserJob.securityContexts.container | default security context for createUserJob containers | {} | 
 | airflow.createUserJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
-### Airflow DB Migration Job
+#### Airflow DB Migration Job
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
 | airflow.migrateDatabaseJob.enabled | Whether to create an init container to wait for db migrations | true | 
