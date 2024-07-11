@@ -24,11 +24,11 @@
 *.md
 robots.txt
 *.tgz
-# airflow
-# msg
+airflow
+msg
 # ingresscontroller
-# eng
-# db
-# crons
-# common
-# app
+eng
+db
+crons
+common
+app

@@ -80,12 +80,16 @@ Construct the name of the ServiceAccount.
 {{/*
 All specification for Ingress
 */}}
+{{- define "qmig.ingress.fullname" -}}
+{{- printf "%s" .Values.ingressController.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "qmig.ingress.labels" -}}
 {{ include "qmig.selectorLabels" . }}
+component: {{ include "qmig.ingress.fullname" . | quote }}
 {{- with .Values.ingress.labels }}
 {{ toYaml . | print }}
 {{- end }}
-{{ include "qmig.labels" . }}
 {{- end -}}
 
 {{/*
@@ -694,14 +698,10 @@ All specification for PVC
     {{- else if $.Values.airflow.securityContexts.container -}}
       {{ toYaml $.Values.airflow.securityContexts.container | print }}
     {{- else -}}
-allowPrivilegeEscalation: false
-capabilities:
-  drop:
-    - ALL
+      {}
     {{- end -}}
   {{- end -}}
 {{- end -}}
-
 
 {{- define "podSecurityContext" -}}
   {{- $ := index . 0 -}}

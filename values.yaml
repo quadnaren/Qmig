@@ -107,6 +107,13 @@ shared:
 ingressController:
   ## @param ingressController.enabled Whether or not to install the ingressController Default: false
   enabled: false
+  ## @param ingressController.provider The name of the ingressController provider either nginx-inc or kubernetes: "" (name: kubernetes)
+  provider: "kubernetes"
+  ## @param ingressController.name The name of the ingressController to use Default: "" (name: nginx-ingress)
+  name: "nginx-ingress"
+  ## @param ingressController.labels Labels for ingressController Default: {}
+  labels: {}
+
   ## @param ingressController.controllerImage.repository Ingress controller image repository Default: qmigrator.azurecr.io/ingress-nginx/controller
   ## @param ingressController.controllerImage.tag Ingress controller image tag/version Default: "v1.9.4"
   controllerImage:
@@ -117,6 +124,11 @@ ingressController:
   webhookImage:
     repository: qmigrator.azurecr.io/ingress-nginx/kube-webhook-certgen
     tag: "v20231011-8b53cabe0"
+  ## @param ingressController.image.repository Ingress image repository for Nginx Inc Default: nginx/nginx-ingress
+  ## @param ingressController.image.tag Ingress image tag/version for Nginx Inc Default: "3.6.1"
+  image:
+    repository: nginx/nginx-ingress
+    tag: "3.6.1"
   ## @param ingressController.imagePullSecrets Ingress Controller component pull secrets Default: {}
   ## Secrets must be manually created in the namespace.
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
@@ -124,6 +136,38 @@ ingressController:
 
   ## @param ingressController.isDefaultClass Set Ingress class as default to cluster Default: true
   isDefaultClass: true
+
+  ## @param ingressController.securityContexts.pod default security context for Ingress Controller pods Default: {}
+  ## @param ingressController.securityContexts.container default security context for Ingress Controller containers Default: {}
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  securityContexts:
+    pod: {}
+    container:
+      allowPrivilegeEscalation: false
+      runAsUser: 101
+      runAsNonRoot: true
+      capabilities:
+        drop:
+        - ALL
+        add:
+        - NET_BIND_SERVICE
+  ## @param ingressController.tolerations Tolerations for Ingress Controller pods assignment Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+  ## @param ingressController.affinity Affinity for Ingress Controller pods assignment (evaluated as a template) Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+  ## @param ingressController.nodeSelector Node labels for Ingress Controller pods assignment Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  nodeSelector: {}
+  ## @param ingressController.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources:
+    limits:
+      cpu: 300m
+      memory: 394Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
 ## Qmigrator ingress parameters
 ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -1201,7 +1245,11 @@ airflow:
   ## @param airflow.securityContexts.containers Detailed default security context for Airflow Container Default: {}
   securityContexts:
     pod: {}
-    container: {}
+    container:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
 
   ## @param airflow.tolerations Tolerations for Airflow pods Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

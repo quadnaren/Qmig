@@ -14,6 +14,7 @@ spec:
   selector:
     {{- include "qmig.app.selectorLabels" . | nindent 4 }}
   ports:
-    - port: {{ .Values.app.service.port }}
-      targetPort: app-ui
+    - name: app-ui
+      port: {{ .Values.app.service.port }}
+      targetPort: 4200
       protocol: TCP

@@ -42,7 +42,7 @@ spec:
           imagePullPolicy: {{ .Values.app.image.pullPolicy }}
           ports:
             - name: app-ui
-              containerPort: {{ .Values.app.service.port }}
+              containerPort: 4200
           securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.app.resources | nindent 12 }}
@@ -72,7 +72,7 @@ spec:
           readinessProbe:
             httpGet:
               path: healthz
-              port: {{ .Values.app.name }}-http
+              port: app-ui
             initialDelaySeconds: {{ .Values.app.readinessProbe.initialDelaySeconds | default 15 }}
             periodSeconds: {{ .Values.app.readinessProbe.periodSeconds | default 60 }}
             timeoutSeconds: {{ .Values.app.readinessProbe.timeoutSeconds | default 3 }}
@@ -83,7 +83,7 @@ spec:
           livenessProbe:
             httpGet:
               path: healthz
-              port: {{ .Values.app.name }}-http
+              port: app-ui
             initialDelaySeconds: {{ .Values.app.readinessProbe.initialDelaySeconds | default 15 }}
             periodSeconds: {{ .Values.app.readinessProbe.periodSeconds | default 60 }}
             timeoutSeconds: {{ .Values.app.readinessProbe.timeoutSeconds | default 3 }}

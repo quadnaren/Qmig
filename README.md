@@ -126,12 +126,23 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
 | ingressController.enabled | Whether or not to install the ingressController | false | 
+| ingressController.provider | The name of the ingressController provider either nginx-inc or kubernetes: "" (name: kubernetes) | 
+| ingressController.name | The name of the ingressController to use | "" (name: nginx-ingress) | 
+| ingressController.labels | Labels for ingressController | {} | 
 | ingressController.controllerImage.repository | Ingress controller image repository | qmigrator.azurecr.io/ingress-nginx/controller | 
 | ingressController.controllerImage.tag | Ingress controller image tag/version | "v1.9.4" | 
 | ingressController.webhookImage.repository | Ingress controller image repository | qmigrator.azurecr.io/ingress-nginx/kube-webhook-certgen | 
 | ingressController.webhookImage.tag | Ingress controller image tag/version | "v20231011-8b53cabe0" | 
+| ingressController.image.repository | Ingress image repository for Nginx Inc | nginx/nginx-ingress | 
+| ingressController.image.tag | Ingress image tag/version for Nginx Inc | "3.6.1" | 
 | ingressController.imagePullSecrets | Ingress Controller component pull secrets | {} | 
 | ingressController.isDefaultClass | Set Ingress class as default to cluster | true | 
+| ingressController.securityContexts.pod | default security context for Ingress Controller pods | {} | 
+| ingressController.securityContexts.container | default security context for Ingress Controller containers | {} | 
+| ingressController.tolerations | Tolerations for Ingress Controller pods assignment | {} | 
+| ingressController.affinity | Affinity for Ingress Controller pods assignment (evaluated as a template) | {} | 
+| ingressController.nodeSelector | Node labels for Ingress Controller pods assignment | {} | 
+| ingressController.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) |
 ### Ingress
 | Property | Description | Default | 
 | :--- | :--- | :--- | 

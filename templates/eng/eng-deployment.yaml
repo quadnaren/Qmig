@@ -44,7 +44,7 @@ spec:
           imagePullPolicy: {{ .Values.eng.image.pullPolicy }}
           ports:
             - name: engine-api
-              containerPort: {{ .Values.eng.service.port }}
+              containerPort: 8080
           securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.eng.resources | nindent 12 }}
@@ -77,7 +77,7 @@ spec:
           readinessProbe:
             httpGet:
               path: api/v1/Sample/Healthz
-              port: {{ .Values.eng.name }}-tcp
+              port: engine-api
             initialDelaySeconds: {{ .Values.eng.readinessProbe.initialDelaySeconds | default 15 }}
             periodSeconds: {{ .Values.eng.readinessProbe.periodSeconds | default 60 }}
             timeoutSeconds: {{ .Values.eng.readinessProbe.timeoutSeconds | default 3 }}
@@ -88,7 +88,7 @@ spec:
           livenessProbe:
             httpGet:
               path: api/v1/Sample/Healthz
-              port: {{ .Values.eng.name }}-tcp
+              port: engine-api
             initialDelaySeconds: {{ .Values.eng.readinessProbe.initialDelaySeconds | default 15 }}
             periodSeconds: {{ .Values.eng.readinessProbe.periodSeconds | default 60 }}
             timeoutSeconds: {{ .Values.eng.readinessProbe.timeoutSeconds | default 3 }}

@@ -1,219 +1,37 @@
-{{- if .Values.ingressController.enabled -}}
+{{- if and .Values.ingressController.enabled (ne .Values.ingressController.provider "nginx-inc") -}}
+{{- $nodeSelector := .Values.ingressController.nodeSelector }}
+{{- $affinity := .Values.ingressController.affinity }}
+{{- $tolerations := .Values.ingressController.tolerations }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.ingressController) }}
+{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.ingressController) }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
-  name: ingress-nginx
+  name: {{ template "qmig.ingress.fullname" . }}
   namespace: {{ .Release.Namespace }}
 automountServiceAccountToken: true
 ---
-# Source: qmig/template/common/controller-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
-  name: ingress-nginx-controller
+  name: {{ template "qmig.ingress.fullname" . }}-controller
   namespace: {{ .Release.Namespace }}
 data:
   allow-snippet-annotations: "false"
 ---
-# Source: qmig/template/common/clusterrole.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    app.kubernetes.io/name: ingress-nginx
-  name: ingress-nginx
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-      - endpoints
-      - nodes
-      - pods
-      - secrets
-      - namespaces
-    verbs:
-      - list
-      - watch
-  - apiGroups:
-      - coordination.k8s.io
-    resources:
-      - leases
-    verbs:
-      - list
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - nodes
-    verbs:
-      - get
-  - apiGroups:
-      - ""
-    resources:
-      - services
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingresses
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - events
-    verbs:
-      - create
-      - patch
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingresses/status
-    verbs:
-      - update
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingressclasses
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - discovery.k8s.io
-    resources:
-      - endpointslices
-    verbs:
-      - list
-      - watch
-      - get
----
-# Source: qmig/template/common/controller-role.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/component: controller
-  name: ingress-nginx
-  namespace: {{ .Release.Namespace }}
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - namespaces
-    verbs:
-      - get
-  - apiGroups:
-      - ""
-    resources:
-      - configmaps
-      - pods
-      - secrets
-      - endpoints
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - services
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingresses
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingresses/status
-    verbs:
-      - update
-  - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingressclasses
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - coordination.k8s.io
-    resources:
-      - leases
-    resourceNames:
-      - ingress-nginx-leader
-    verbs:
-      - get
-      - update
-  - apiGroups:
-      - coordination.k8s.io
-    resources:
-      - leases
-    verbs:
-      - create
-  - apiGroups:
-      - ""
-    resources:
-      - events
-    verbs:
-      - create
-      - patch
-  - apiGroups:
-      - discovery.k8s.io
-    resources:
-      - endpointslices
-    verbs:
-      - list
-      - watch
-      - get
----
-# Source: qmig/template/common/controller-rolebinding.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/component: controller
-  name: ingress-nginx
-  namespace: {{ .Release.Namespace }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: ingress-nginx
-subjects:
-  - kind: ServiceAccount
-    name: ingress-nginx
-    namespace: {{ .Release.Namespace }}
----
-# Source: qmig/template/common/controller-service-webhook.yaml
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
-  name: ingress-nginx-controller-admission
+  name: {{ template "qmig.ingress.fullname" . }}-controller-admission
   namespace: {{ .Release.Namespace }}
 spec:
   type: ClusterIP
@@ -223,17 +41,16 @@ spec:
       targetPort: webhook
       appProtocol: https
   selector:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
 ---
-# Source: qmig/template/common/controller-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
-  name: ingress-nginx-controller
+  name: {{ template "qmig.ingress.fullname" . }}-controller
   namespace: {{ .Release.Namespace }}
 spec:
   type: LoadBalancer
@@ -252,22 +69,21 @@ spec:
       targetPort: https
       appProtocol: https
   selector:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
 ---
-# Source: qmig/template/common/controller-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
-  name: ingress-nginx-controller
+  name: {{ template "qmig.ingress.fullname" . }}-controller
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: ingress-nginx
+      {{- include "qmig.ingress.labels" . | nindent 6 }}
       app.kubernetes.io/component: controller
   replicas: 1
   revisionHistoryLimit: 10
@@ -275,9 +91,13 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: ingress-nginx
+        {{- include "qmig.ingress.labels" . | nindent 8 }}
         app.kubernetes.io/component: controller
     spec:
+      securityContext: {{ $securityContext | nindent 8 }}
+      nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
+      affinity: {{- toYaml $affinity | nindent 8 }}
+      tolerations: {{- toYaml $tolerations | nindent 8 }}
       dnsPolicy: ClusterFirst
       {{- include "qmig.dockerauthList" (list . .Values.ingressController) | indent 6 }}
       containers:
@@ -291,26 +111,17 @@ spec:
                 - /wait-shutdown
           args: 
             - /nginx-ingress-controller
-            - --publish-service=$(POD_NAMESPACE)/ingress-nginx-controller
-            - --election-id=ingress-nginx-leader
-            - --controller-class=k8s.io/ingress-nginx
+            - --publish-service=$(POD_NAMESPACE)/{{ template "qmig.ingress.fullname" . }}-controller
+            - --election-id={{ template "qmig.ingress.fullname" . }}-leader
+            - --controller-class=k8s.io/{{ template "qmig.ingress.fullname" . }}
             - --ingress-class=nginx
-            - --configmap=$(POD_NAMESPACE)/ingress-nginx-controller
+            - --configmap=$(POD_NAMESPACE)/{{ template "qmig.ingress.fullname" . }}-controller
             - --validating-webhook=:8443
             - --validating-webhook-certificate=/usr/local/certificates/cert
             - --validating-webhook-key=/usr/local/certificates/key
-          securityContext: 
-            runAsNonRoot: true
-            runAsUser: 101
-            allowPrivilegeEscalation: false
-            seccompProfile: 
-              type: RuntimeDefault
-            capabilities:
-              drop:
-              - ALL
-              add:
-              - NET_BIND_SERVICE
-            readOnlyRootFilesystem: false
+          resources:
+            {{- toYaml .Values.ingressController.resources | nindent 12 }}
+          securityContext: {{ $containerSecurityContext | nindent 12 }}
           env:
             - name: POD_NAME
               valueFrom:
@@ -356,30 +167,20 @@ spec:
             - name: webhook-cert
               mountPath: /usr/local/certificates/
               readOnly: true
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "1"
-              memory: "1Gi"
-      nodeSelector: 
-        kubernetes.io/os: linux
-      serviceAccountName: ingress-nginx
+      serviceAccountName: {{ template "qmig.ingress.fullname" . }}
       terminationGracePeriodSeconds: 300
       volumes:
         - name: webhook-cert
           secret:
-            secretName: ingress-nginx-admission
+            secretName: {{ template "qmig.ingress.fullname" . }}-admission
 ---
-# Source: qmig/template/common/controller-ingressclass.yaml
 # We don't support namespaced ingressClass yet
 # So a ClusterRole and a ClusterRoleBinding is required
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller
   annotations:
     {{- if .Values.ingressController.isDefaultClass }}
@@ -388,18 +189,17 @@ metadata:
     "helm.sh/hook": pre-install,pre-upgrade
   name: nginx
 spec:
-  controller: k8s.io/ingress-nginx
+  controller: k8s.io/{{ template "qmig.ingress.fullname" . }}
 ---
-# Source: qmig/template/common/admission-webhooks/validating-webhook.yaml
 # before changing this value, check the required kubernetes version
 # https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#prerequisites
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: admission-webhook
-  name: ingress-nginx-admission
+  name: {{ template "qmig.ingress.fullname" . }}-admission
 webhooks:
   - name: validate.nginx.ingress.kubernetes.io
     matchPolicy: Equivalent
@@ -419,26 +219,25 @@ webhooks:
       - v1
     clientConfig:
       service:
-        name: ingress-nginx-controller-admission
+        name: {{ template "qmig.ingress.fullname" . }}-controller-admission
         namespace: {{ .Release.Namespace }}
         path: /networking/v1/ingresses
 ---
-# Source: qmig/template/common/admission-webhooks/job-patch/networkpolicy.yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: ingress-nginx-admission
+  name: {{ template "qmig.ingress.fullname" . }}-admission
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: admission-webhook
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: ingress-nginx
+      {{- include "qmig.ingress.labels" . | nindent 6 }}
       app.kubernetes.io/component: admission-webhook
   policyTypes:
     - Ingress
@@ -446,101 +245,41 @@ spec:
   egress:
     - {}
 ---
-# Source: qmig/template/common/admission-webhooks/job-patch/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ingress-nginx-admission
+  name: {{ template "qmig.ingress.fullname" . }}-admission
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: admission-webhook
 ---
-# Source: qmig/template/common/admission-webhooks/job-patch/clusterrole.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: ingress-nginx-admission
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-  labels:
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/component: admission-webhook
-rules:
-  - apiGroups:
-      - admissionregistration.k8s.io
-    resources:
-      - validatingwebhookconfigurations
-    verbs:
-      - get
-      - update
----
-# Source: qmig/template/common/admission-webhooks/job-patch/role.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: ingress-nginx-admission
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-  labels:
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/component: admission-webhook
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - secrets
-    verbs:
-      - get
-      - create
----
-# Source: qmig/template/common/admission-webhooks/job-patch/rolebinding.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: ingress-nginx-admission
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-  labels:    
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/component: admission-webhook
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: ingress-nginx-admission
-subjects:
-  - kind: ServiceAccount
-    name: ingress-nginx-admission
-    namespace: {{ .Release.Namespace }}
----
-# Source: qmig/template/common/admission-webhooks/job-patch/job-createSecret.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ingress-nginx-admission-create
+  name: {{ template "qmig.ingress.fullname" . }}-admission-create
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: admission-webhook
 spec:
   template:
     metadata:
-      name: ingress-nginx-admission-create
+      name: {{ template "qmig.ingress.fullname" . }}-admission-create
       labels:
-        app.kubernetes.io/name: ingress-nginx
+        {{- include "qmig.ingress.labels" . | nindent 8 }}
         app.kubernetes.io/component: admission-webhook
     spec:
+      securityContext: {{ $securityContext | nindent 8 }}
+      nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
+      affinity: {{- toYaml $affinity | nindent 8 }}
+      tolerations: {{- toYaml $tolerations | nindent 8 }}
       {{- include "qmig.dockerauthList" (list . .Values.ingressController) | indent 6 }}
       containers:
         - name: create
@@ -548,16 +287,11 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
             - create
-            - --host=ingress-nginx-controller-admission,ingress-nginx-controller-admission.$(POD_NAMESPACE).svc
+            - --host={{ template "qmig.ingress.fullname" . }}-controller-admission,{{ template "qmig.ingress.fullname" . }}-controller-admission.$(POD_NAMESPACE).svc
             - --namespace=$(POD_NAMESPACE)
-            - --secret-name=ingress-nginx-admission
+            - --secret-name={{ template "qmig.ingress.fullname" . }}-admission
           resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "1"
-              memory: "1Gi"
+            {{- toYaml .Values.ingressController.resources | nindent 12 }}
           env:
             - name: POD_NAMESPACE
               valueFrom:
@@ -574,30 +308,31 @@ spec:
             seccompProfile:
               type: RuntimeDefault
       restartPolicy: OnFailure
-      serviceAccountName: ingress-nginx-admission
-      nodeSelector: 
-        kubernetes.io/os: linux
+      serviceAccountName: {{ template "qmig.ingress.fullname" . }}-admission
 ---
-# Source: qmig/template/common/admission-webhooks/job-patch/job-patchWebhook.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ingress-nginx-admission-patch
+  name: {{ template "qmig.ingress.fullname" . }}-admission-patch
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app.kubernetes.io/name: ingress-nginx
+    {{- include "qmig.ingress.labels" . | nindent 4 }}
     app.kubernetes.io/component: admission-webhook
 spec:
   template:
     metadata:
-      name: ingress-nginx-admission-patch
+      name: {{ template "qmig.ingress.fullname" . }}-admission-patch
       labels:
-        app.kubernetes.io/name: ingress-nginx
+        {{- include "qmig.ingress.labels" . | nindent 8 }}
         app.kubernetes.io/component: admission-webhook
     spec:
+      securityContext: {{ $securityContext | nindent 8 }}
+      nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
+      affinity: {{- toYaml $affinity | nindent 8 }}
+      tolerations: {{- toYaml $tolerations | nindent 8 }}
       {{- include "qmig.dockerauthList" (list . .Values.ingressController) | indent 6 }}
       containers:
         - name: create
@@ -605,10 +340,10 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
             - patch
-            - --webhook-name=ingress-nginx-admission
+            - --webhook-name={{ template "qmig.ingress.fullname" . }}-admission
             - --namespace=$(POD_NAMESPACE)
             - --patch-mutating=false
-            - --secret-name=ingress-nginx-admission
+            - --secret-name={{ template "qmig.ingress.fullname" . }}-admission
             - --patch-failure-policy=Fail
           env:
             - name: POD_NAMESPACE
@@ -616,12 +351,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "1"
-              memory: "1Gi"
+            {{- toYaml .Values.ingressController.resources | nindent 12 }}
           securityContext: 
             allowPrivilegeEscalation: false
             capabilities:
@@ -633,7 +363,5 @@ spec:
             seccompProfile:
               type: RuntimeDefault
       restartPolicy: OnFailure
-      serviceAccountName: ingress-nginx-admission
-      nodeSelector: 
-        kubernetes.io/os: linux
+      serviceAccountName: {{ template "qmig.ingress.fullname" . }}-admission
 {{- end -}}
