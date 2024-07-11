@@ -107,7 +107,7 @@ shared:
 ingressController:
   ## @param ingressController.enabled Whether or not to install the ingressController Default: false
   enabled: false
-  ## @param ingressController.provider The name of the ingressController provider either nginx-inc or kubernetes: "" (name: kubernetes)
+  ## @param ingressController.provider The name of the ingressController provider either nginx-inc or kubernetes Default: kubernetes
   provider: "kubernetes"
   ## @param ingressController.name The name of the ingressController to use Default: "" (name: nginx-ingress)
   name: "nginx-ingress"

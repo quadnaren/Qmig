@@ -23,7 +23,7 @@ helm install <name> qmigrator/qmig \
   --set imageCredentials.data.username="userxxxx" --set imageCredentials.data.password="passxxxx"
 ```
 
-## Ingress Installation
+## Ingress Controller
 - Qmigrator uses ingress to expose the application
 - You may use existing ingress if present in the cluster by updating the properties of
   - ingress
@@ -32,6 +32,10 @@ helm install <name> qmigrator/qmig \
 ```
   --set ingressController.enabled=true
 ```
+- Two providers of Ingress Controller available ["kubernetes", "nginx-inc"] which can be set via provider flag
+> [!NOTE]
+More Ref: https://github.com/kubernetes/ingress-nginx <br>
+https://github.com/nginxinc/kubernetes-ingress
 
 ## Enable Airflow DataMigration
 - Pass extra flag for Airflow installation within Helm chart
@@ -126,7 +130,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
 | ingressController.enabled | Whether or not to install the ingressController | false | 
-| ingressController.provider | The name of the ingressController provider either nginx-inc or kubernetes: "" (name: kubernetes) | 
+| ingressController.provider | The name of the ingressController provider either nginx-inc or kubernetes |"kubernetes" | 
 | ingressController.name | The name of the ingressController to use | "" (name: nginx-ingress) | 
 | ingressController.labels | Labels for ingressController | {} | 
 | ingressController.controllerImage.repository | Ingress controller image repository | qmigrator.azurecr.io/ingress-nginx/controller | 
@@ -138,7 +142,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | ingressController.imagePullSecrets | Ingress Controller component pull secrets | {} | 
 | ingressController.isDefaultClass | Set Ingress class as default to cluster | true | 
 | ingressController.securityContexts.pod | default security context for Ingress Controller pods | {} | 
-| ingressController.securityContexts.container | default security context for Ingress Controller containers | {} | 
+| ingressController.securityContexts.container | default security context for Ingress Controller containers | | 
 | ingressController.tolerations | Tolerations for Ingress Controller pods assignment | {} | 
 | ingressController.affinity | Affinity for Ingress Controller pods assignment (evaluated as a template) | {} | 
 | ingressController.nodeSelector | Node labels for Ingress Controller pods assignment | {} | 
