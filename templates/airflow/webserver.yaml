@@ -2,8 +2,8 @@
 {{- $nodeSelector := .Values.airflow.nodeSelector }}
 {{- $affinity := .Values.airflow.affinity }}
 {{- $tolerations := .Values.airflow.tolerations }}
-{{- $securityContext := include "podSecurityContext" (list . .Values.airflow.webserver) }}
-{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.airflow.webserver) }}
+{{- $securityContext := include "airflow.podSecurityContext" (list . .Values.airflow.webserver) }}
+{{- $containerSecurityContext := include "airflow.containerSecurityContext" (list . .Values.airflow.webserver) }}
 {{- $containerSecurityContextWaitForMigrations := include "containerSecurityContext" (list . .Values.airflow.waitForMigrations) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.airflow.fullname" .) "empty" -}}
 {{- $pvc := include "qmig.pv.shared" . -}}

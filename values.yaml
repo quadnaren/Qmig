@@ -1245,11 +1245,7 @@ airflow:
   ## @param airflow.securityContexts.containers Detailed default security context for Airflow Container Default: {}
   securityContexts:
     pod: {}
-    container:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-          - ALL
+    container: {}
 
   ## @param airflow.tolerations Tolerations for Airflow pods Default: {}
   ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

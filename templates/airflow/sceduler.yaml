@@ -2,9 +2,9 @@
 {{- $nodeSelector := .Values.airflow.nodeSelector }}
 {{- $affinity := .Values.airflow.affinity }}
 {{- $tolerations := .Values.airflow.tolerations }}
-{{- $securityContext := include "podSecurityContext" (list . .Values.airflow.scheduler) }}
-{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.airflow.scheduler) }}
-{{- $containerSecurityContextWaitForMigrations := include "containerSecurityContext" (list . .Values.airflow.waitForMigrations) }}
+{{- $securityContext := include "airflow.podSecurityContext" (list . .Values.airflow.scheduler) }}
+{{- $containerSecurityContext := include "airflow.containerSecurityContext" (list . .Values.airflow.scheduler) }}
+{{- $containerSecurityContextWaitForMigrations := include "airflow.containerSecurityContext" (list . .Values.airflow.waitForMigrations) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.airflow.fullname" .) "empty" -}}
 {{- $pvc := include "qmig.pv.shared" . -}}
 apiVersion: apps/v1

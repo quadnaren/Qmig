@@ -690,13 +690,12 @@ All specification for PVC
     name: {{ include "qmig.airflow.config" . }}
 {{- end }}
 
+
 {{- define "containerSecurityContext" -}}
   {{- $ := index . 0 -}}
   {{- with index . 1 }}
     {{- if .securityContexts.container -}}
       {{ toYaml .securityContexts.container | print }}
-    {{- else if $.Values.airflow.securityContexts.container -}}
-      {{ toYaml $.Values.airflow.securityContexts.container | print }}
     {{- else -}}
       {}
     {{- end -}}
@@ -708,10 +707,38 @@ All specification for PVC
   {{- with index . 1 }}
     {{- if .securityContexts.pod -}}
       {{ toYaml .securityContexts.pod | print }}
+    {{- else -}}
+      {}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- define "airflow.containerSecurityContext" -}}
+  {{- $ := index . 0 -}}
+  {{- with index . 1 }}
+    {{- if .securityContexts.container -}}
+      {{ toYaml .securityContexts.container | print }}
+    {{- else if $.Values.airflow.securityContexts.container -}}
+      {{ toYaml $.Values.airflow.securityContexts.container | print }}
+    {{- else -}}
+allowPrivilegeEscalation: false
+capabilities:
+  drop:
+    - ALL
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "airflow.podSecurityContext" -}}
+  {{- $ := index . 0 -}}
+  {{- with index . 1 }}
+    {{- if .securityContexts.pod -}}
+      {{ toYaml .securityContexts.pod | print }}
     {{- else if $.Values.airflow.securityContexts.pod -}}
       {{ toYaml $.Values.airflow.securityContexts.pod | print }}
     {{- else -}}
-      {}
+runAsUser: {{ $.Values.airflow.uid }}
+fsGroup: {{ $.Values.airflow.gid }}
     {{- end }}
   {{- end }}
 {{- end }}

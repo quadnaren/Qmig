@@ -2,8 +2,8 @@
 {{- $nodeSelector := .Values.airflow.nodeSelector }}
 {{- $affinity := .Values.airflow.affinity }}
 {{- $tolerations := .Values.airflow.tolerations }}
-{{- $securityContext := include "podSecurityContext" (list . .Values.airflow.createUserJob) }}
-{{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.airflow.createUserJob) }}
+{{- $securityContext := include "airflow.podSecurityContext" (list . .Values.airflow.createUserJob) }}
+{{- $containerSecurityContext := include "airflow.containerSecurityContext" (list . .Values.airflow.createUserJob) }}
 {{- $pvcTemp := printf "%s-%s" (include "qmig.airflow.fullname" .) "empty" -}}
 {{- $pvc := include "qmig.pv.shared" . -}}
 apiVersion: batch/v1
