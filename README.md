@@ -26,17 +26,19 @@ helm install <name> qmigrator/qmig \
   --set imageCredentials.data.username="userxxxx" --set imageCredentials.data.password="passxxxx"
 ```
 
-## Ingress Installation
+## Ingress Controller
 - Qmigrator uses ingress to expose the application
 - You may use existing ingress if present in the cluster by updating the properties of
-  - app.ingress
-  - eng.ingress
-  - airflow.ingress
+  - ingress
 <br>OR 
 - Enable the flag of Ingress controller installation within the Helm chart
 ```
   --set ingressController.enabled=true
 ```
+- Two providers of Ingress Controller available ["kubernetes", "nginx-inc"] which can be set via provider flag
+> [!NOTE]
+More Ref: https://github.com/kubernetes/ingress-nginx <br>
+https://github.com/nginxinc/kubernetes-ingress
 
 ## Enable Airflow DataMigration
 - Pass extra flag for Airflow installation within Helm chart
