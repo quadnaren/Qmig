@@ -229,6 +229,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | :--- | :--- | :--- | 
 | db.name | Name for DB component | "db" | 
 | db.replicas | Number of DB component replicas | 1 | 
+| db.strategy | Update strategy for DB component pods | "Recreate" | 
 | db.image.repository | DB component image repository | "postgres" (hub.docker.com) | 
 | db.image.tag | DB component image tag/version | "14.2" | 
 | db.image.pullPolicy | DB component pull policy | "IfNotPresent" | 
@@ -266,6 +267,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | :--- | :--- | :--- | 
 | msg.name | Name for Cache component | "msg" | 
 | msg.replicas | Number of Cache component replicas | 1 | 
+| msg.strategy | Update strategy for Cache component pods | "Recreate" | 
 | msg.image.repository | Cache component image repository | "eqalpha/keydb" | 
 | msg.image.tag | Cache component image tag/version | "x86_64_v6.3.4" | 
 | msg.image.pullPolicy | Cache component pull policy | IfNotPresent | 
@@ -538,6 +540,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.createUserJob.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
 | airflow.createUserJob.annotations | Add extra annotations to the createUserJob | {} | 
 | airflow.createUserJob.podAnnotations | Add extra Pod annotations to the createUserJob pods | {} | 
+| airflow.createUserJob.useHelmHooks | Helm hook for job pod | true | 
 | airflow.createUserJob.securityContexts.pod | default security context for createUserJob pods | {} | 
 | airflow.createUserJob.securityContexts.container | default security context for createUserJob containers | {} | 
 | airflow.createUserJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 
@@ -548,6 +551,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | airflow.migrateDatabaseJob.safeToEvict | This setting tells Kubernetes that its ok to evict | true | 
 | airflow.migrateDatabaseJob.annotations | Add extra annotations to the migrateDatabaseJob | {} | 
 | airflow.migrateDatabaseJob.podAnnotations | Add extra Pod annotations to the migrateDatabaseJob pod | {} | 
+| airflow.migrateDatabaseJob.useHelmHooks | Helm hook for job pod | true | 
 | airflow.migrateDatabaseJob.securityContexts.pod | default security context for migrateDatabaseJob pod | {} | 
 | airflow.migrateDatabaseJob.securityContexts.container | default security context for migrateDatabaseJob containers | {} | 
 | airflow.migrateDatabaseJob.resources | Set container requests and limits for different resources like CPU or memory (essential for production workloads) | 

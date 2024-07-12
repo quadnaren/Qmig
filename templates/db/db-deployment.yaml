@@ -18,6 +18,8 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.db.replicas }}
+  strategy:
+    type: {{ .Values.db.strategy }}
   selector:
     matchLabels:
       {{- include "qmig.db.selectorLabels" . | nindent 6 }}

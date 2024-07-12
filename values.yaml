@@ -405,6 +405,7 @@ eng:
 ## Metadata DB component
 ## @param db.name Name for DB component Default: "db"
 ## @param db.replicas Number of DB component replicas Default: 1
+## @param db.strategy Update strategy for DB component pods Default: "Recreate"
 ## @param db.image.repository DB component image repository Default: "postgres" (hub.docker.com)
 ## @param db.image.tag DB component image tag/version Default: "14.2"
 ## @param db.image.pullPolicy DB component pull policy Default: "IfNotPresent"
@@ -412,6 +413,7 @@ eng:
 db:
   name: "db"
   replicas: 1
+  strategy: "Recreate"
   image:
     repository: postgres
     pullPolicy: IfNotPresent
@@ -554,6 +556,7 @@ db:
 ## Cache component
 ## @param msg.name Name for Cache component Default: "msg"
 ## @param msg.replicas Number of Cache component replicas Default: 1
+## @param msg.strategy Update strategy for Cache component pods Default: "Recreate"
 ## @param msg.image.repository Cache component image repository Default: "eqalpha/keydb"
 ## @param msg.image.tag Cache component image tag/version Default: "x86_64_v6.3.4"
 ## @param msg.image.pullPolicy Cache component pull policy Default: IfNotPresent
@@ -561,6 +564,7 @@ db:
 msg:
   name: "msg"
   replicas: 1
+  strategy: "Recreate"
   image:
     repository: eqalpha/keydb
     pullPolicy: IfNotPresent
@@ -1434,6 +1438,8 @@ airflow:
     annotations: {}
     ## @param airflow.createUserJob.podAnnotations Add extra Pod annotations to the createUserJob pods Default: {}
     podAnnotations: {}
+    ## @param airflow.createUserJob.useHelmHooks Helm hook for job pod Default: true
+    useHelmHooks: true
     ## @param airflow.createUserJob.securityContexts.pod default security context for createUserJob pods Default: {}
     ## @param airflow.createUserJob.securityContexts.container default security context for createUserJob containers Default: {}
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
@@ -1460,6 +1466,8 @@ airflow:
     annotations: {}
     ## @param airflow.migrateDatabaseJob.podAnnotations Add extra Pod annotations to the migrateDatabaseJob pod Default: {}
     podAnnotations: {}
+    ## @param airflow.migrateDatabaseJob.useHelmHooks Helm hook for job pod Default: true
+    useHelmHooks: true
     ## @param airflow.migrateDatabaseJob.securityContexts.pod default security context for migrateDatabaseJob pod Default: {}
     ## @param airflow.migrateDatabaseJob.securityContexts.container default security context for migrateDatabaseJob containers Default: {}
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
