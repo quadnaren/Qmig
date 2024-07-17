@@ -84,7 +84,7 @@ spec:
       volumes:
         - name: sqlconfig-sh
           configMap:
-            name: sqlconfig.sh
+            name: {{ template "qmig.db.fullname" . }}-config
         - name: {{ $pvcTemp }}
           emptyDir: {}
         - name: {{ $pvc }}

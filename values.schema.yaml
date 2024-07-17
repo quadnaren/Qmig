@@ -24,11 +24,3 @@ shared:
 ingress:
   className: "nginx"
   host: "example.internal"
-
-## Enabling the Airflow
-airflow:
-  enabled: true
-  secret:
-    data:
-      ## Required airflow Password if enabled
-      airflow_password: xxxx
