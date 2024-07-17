@@ -7,35 +7,35 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ template "qmig.ingress.fullname" . }}
+  name: {{ template "qmig.ingresscontroller.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.ingress.labels" . | nindent 4 }}
+    {{- include "qmig.ingresscontroller.labels" . | nindent 4 }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "qmig.ingress.fullname" . }}
+  name: {{ template "qmig.ingresscontroller.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.ingress.labels" . | nindent 4 }}
+    {{- include "qmig.ingresscontroller.labels" . | nindent 4 }}
 data: {}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "qmig.ingress.fullname" . }}-leader
+  name: {{ template "qmig.ingresscontroller.fullname" . }}-leader
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.ingress.labels" . | nindent 4 }}
+    {{- include "qmig.ingresscontroller.labels" . | nindent 4 }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "qmig.ingress.fullname" . }}-controller
+  name: {{ template "qmig.ingresscontroller.fullname" . }}-controller
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.ingress.labels" . | nindent 4 }}
+    {{- include "qmig.ingresscontroller.labels" . | nindent 4 }}
 spec:
   externalTrafficPolicy: Local
   type: LoadBalancer
@@ -49,24 +49,24 @@ spec:
     protocol: TCP
     name: https
   selector:
-    {{- include "qmig.ingress.labels" . | nindent 4 }}
+    {{- include "qmig.ingresscontroller.labels" . | nindent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "qmig.ingress.fullname" . }}-controller
+  name: {{ template "qmig.ingresscontroller.fullname" . }}-controller
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "qmig.ingress.labels" . | nindent 4 }}  
+    {{- include "qmig.ingresscontroller.labels" . | nindent 4 }}  
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "qmig.ingress.labels" . | nindent 6 }}   
+      {{- include "qmig.ingresscontroller.labels" . | nindent 6 }}   
   template:
     metadata:
       labels:
-        {{- include "qmig.ingress.labels" . | nindent 8 }} 
+        {{- include "qmig.ingresscontroller.labels" . | nindent 8 }} 
     spec:
       volumes:
       - name: nginx-etc
@@ -81,14 +81,14 @@ spec:
       nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
       affinity: {{- toYaml $affinity | nindent 8 }}
       tolerations: {{- toYaml $tolerations | nindent 8 }}
-      serviceAccountName: {{ template "qmig.ingress.fullname" . }}
+      serviceAccountName: {{ template "qmig.ingresscontroller.fullname" . }}
       automountServiceAccountToken: true
       terminationGracePeriodSeconds: 30
       hostNetwork: false
       dnsPolicy: ClusterFirst
       containers:
       - image: "{{ .Values.ingressController.image.repository }}:{{ .Values.ingressController.image.tag }}"
-        name: {{ template "qmig.ingress.fullname" . }}
+        name: {{ template "qmig.ingresscontroller.fullname" . }}
         imagePullPolicy: "IfNotPresent"
         ports:
         - name: http
@@ -131,7 +131,7 @@ spec:
           - -nginx-reload-timeout=60000
           - -enable-app-protect=false
           - -enable-app-protect-dos=false
-          - -nginx-configmaps=$(POD_NAMESPACE)/{{ template "qmig.ingress.fullname" . }}
+          - -nginx-configmaps=$(POD_NAMESPACE)/{{ template "qmig.ingresscontroller.fullname" . }}
           - -ingress-class=nginx
           - -watch-namespace=$(POD_NAMESPACE)
           - -health-status=false
@@ -142,9 +142,9 @@ spec:
           - -nginx-status-port=8080
           - -nginx-status-allow-cidrs=127.0.0.1
           - -report-ingress-status
-          - -external-service={{ template "qmig.ingress.fullname" . }}-controller
+          - -external-service={{ template "qmig.ingresscontroller.fullname" . }}-controller
           - -enable-leader-election=true
-          - -leader-election-lock-name={{ template "qmig.ingress.fullname" . }}-leader
+          - -leader-election-lock-name={{ template "qmig.ingresscontroller.fullname" . }}-leader
           - -enable-prometheus-metrics=false
           - -prometheus-metrics-listen-port=9113
           - -enable-service-insight=false
@@ -167,7 +167,7 @@ spec:
           - -enable-telemetry-reporting=false
           - -weight-changes-dynamic-reload=false
       initContainers:
-      - name: init-{{ template "qmig.ingress.fullname" . }}
+      - name: init-{{ template "qmig.ingresscontroller.fullname" . }}
         image: "{{ .Values.ingressController.image.repository }}:{{ .Values.ingressController.image.tag }}"
         imagePullPolicy: "IfNotPresent"
         command: ['cp', '-vdR', '/etc/nginx/.', '/mnt/etc']
@@ -183,7 +183,7 @@ kind: IngressClass
 metadata:
   name: nginx
   labels:
-    {{- include "qmig.ingress.labels" . | nindent 4 }}   
+    {{- include "qmig.ingresscontroller.labels" . | nindent 4 }}   
   annotations:
     {{- if .Values.ingressController.isDefaultClass }}
     "ingressclass.kubernetes.io/is-default-class": "true"

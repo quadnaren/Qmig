@@ -38,17 +38,10 @@ Define the qmig.namespace template if set with forceNamespace or .Release.Namesp
 {{- end -}}
 
 {{/*
-Endpoint specification for s3
-*/}}
-{{- define "qmig.s3.endpoint" -}}
-{{- printf "https://s3.%s.amazonaws.com" .Values.aws.s3.region | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
 Secret specification
 */}}
 {{- define "qmig.secret" -}}
-{{- printf "%s" .Values.secret.secretName | default  (printf "%s-secret" .Release.Name)  -}}
+{{- printf "%s" .Values.secret.secretName | default  (printf "%s-admin-secret" .Release.Name)  -}}
 {{- end -}}
 
 {{- define "qmig.secret.labels" -}}
@@ -80,13 +73,20 @@ Construct the name of the ServiceAccount.
 {{/*
 All specification for Ingress
 */}}
-{{- define "qmig.ingress.fullname" -}}
+{{- define "qmig.ingresscontroller.fullname" -}}
 {{- printf "%s" .Values.ingressController.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "qmig.ingresscontroller.labels" -}}
+{{ include "qmig.selectorLabels" . }}
+component: {{ include "qmig.ingresscontroller.fullname" . | quote }}
+{{- with .Values.ingressController.labels }}
+{{ toYaml . | print }}
+{{- end }}
 {{- end -}}
 
 {{- define "qmig.ingress.labels" -}}
 {{ include "qmig.selectorLabels" . }}
-component: {{ include "qmig.ingress.fullname" . | quote }}
 {{- with .Values.ingress.labels }}
 {{ toYaml . | print }}
 {{- end }}
