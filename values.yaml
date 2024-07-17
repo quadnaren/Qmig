@@ -214,9 +214,9 @@ app:
   name: "admin-app"
   replicas: 1
   image:
-    repository: qmigrator.azurecr.io/qubeapp
+    repository: qmigrator.azurecr.io/qubeadmin
     pullPolicy: IfNotPresent
-    tag: "q1002"
+    tag: "q142"
 
   imagePullSecrets: {}
    
@@ -298,9 +298,9 @@ eng:
   name: "admin-eng"
   replicas: 1
   image:
-    repository: qmigrator.azurecr.io/qubeeng
+    repository: qmigrator.azurecr.io/admineng
     pullPolicy: IfNotPresent
-    tag: "q1044"
+    tag: "q1163"
 
   imagePullSecrets: {}
 
@@ -447,7 +447,7 @@ db:
     loadDB:
       image:
         repository: qmigrator.azurecr.io/qmigdb-ini
-        tag: "1181-ora2pg"
+        tag: "1199-admin"
       ## @param db.initContainers.resources Set Init container requests and limits for different resources like CPU or memory
       resources:
         requests:
