@@ -26,6 +26,8 @@ secret:
 
 ## Required docker registry information to pull images from
 imageCredentials:
+  ## @param imageCredentials.enabled create docker pull secret Default: true
+  create: true
   ## @param imageCredentials.secretName Name for docker secret Default: "" (name: qmig-docker)
   secretName: "" 
   ## @param imageCredentials.annotations Annotations for docker secret Default: {}
@@ -206,8 +208,8 @@ rbac:
 ## App component
 ## @param app.name Name for App component Default: "app"
 ## @param app.replicas Number of App Components replicas Default: 1
-## @param app.image.repository App component image repository Default: "qmigrator.azurecr.io/qubeapp"
-## @param app.image.tag App component image tag/version Default: "q1002"
+## @param app.image.repository App component image repository Default: "qmigrator.azurecr.io/qubeappv2"
+## @param app.image.tag App component image tag/version Default: "ora2pg-134"
 ## @param app.image.pullPolicy App component pull policy Default: "IfNotPresent"
 ## @param app.imagePullSecrets App component pull secrets Default: {}
 app:
@@ -290,8 +292,8 @@ app:
 ## Engine component
 ## @param eng.name Name for Engine component Default: "eng"
 ## @param eng.replicas Number of Engine component replicas Default: 1
-## @param eng.image.repository Engine component image repository Default: "qmigrator.azurecr.io/qubeeng"
-## @param eng.image.tag Engine component image tag/version Default: "q1044"
+## @param eng.image.repository Engine component image repository Default: "qmigrator.azurecr.io/admineng"
+## @param eng.image.tag Engine component image tag/version Default: "q1163"
 ## @param eng.image.pullPolicy Engine component pull policy Default: "IfNotPresent"
 ## @param eng.imagePullSecrets Engine component pull secrets Default: {}
 eng:
@@ -442,7 +444,7 @@ db:
 
   ## Initialize the container of DB to load the db components
   ## @param db.initContainers.image.repository Load DB image repository Default: "qmigrator.azurecr.io/qmigdb-ini"
-  ## @param db.initContainers.image.tag Load DB image tag/version Default: "1181-ora2pg"
+  ## @param db.initContainers.image.tag Load DB image tag/version Default: "1199-admmin"
   initContainer:
     loadDB:
       image:
