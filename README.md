@@ -105,6 +105,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | secret.data.PROJECT_NAME | Name of project | null | 
 | secret.data.POSTGRES_PASSWORD | Admin Password for metadata DB | null | 
 | secret.data.REDIS_PASS | Admin Password for Cache | null | 
+| imageCredentials.create | create docker pull secret | true 
 | imageCredentials.secretName | Name for docker secret | "" (name: qmig-docker) | 
 | imageCredentials.annotations | Annotations for docker secret | {} | 
 | imageCredentials.labels | Labels for docker secret | {} | 
@@ -393,7 +394,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 ### Testing
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
-| tests.enabled | Enable Testing | true | 
+| tests.enabled | Enable Testing | false | 
 | tests.name | Name for Testing | "tests" | 
 | tests.image.repository | Testing image repository | "qmigrator.azurecr.io/webtestotp" | 
 | tests.image.tag | Testing image tag/version | "971" | 
@@ -423,7 +424,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 ### Performance
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
-| perfs.enabled | Enable Performance | true | 
+| perfs.enabled | Enable Performance | false | 
 | perfs.name | Name for Performance | "perfs" | 
 | perfs.image.repository | Performance image repository | "qmigrator.azurecr.io/webperfotp" | 
 | perfs.image.tag | Performance image tag/version | "985" | 

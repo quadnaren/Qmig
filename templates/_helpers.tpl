@@ -547,7 +547,9 @@ Docker credentails specification
 {{- define "qmig.dockerauthList" -}}
   {{- $ := index . 0 -}}
   {{- $pullSecrets := list }}
+  {{- if $.Values.imageCredentials.enabled }}
   {{- $pullSecrets = append $pullSecrets (include "qmig.dockerauth" $ ) -}}
+  {{- end }}
   {{- with index . 1 }}
     {{- range .imagePullSecrets -}}
     {{- if kindIs "map" . -}}

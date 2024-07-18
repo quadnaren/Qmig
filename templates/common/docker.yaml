@@ -1,3 +1,4 @@
+{{- if .Values.imageCredentials.enabled }}
 {{- $username := .Values.imageCredentials.data.username | required ".Values.imageCredentials.data.username is required." -}}
 {{- $password := .Values.imageCredentials.data.password | required ".Values.imageCredentials.data.password  is required." -}}
 apiVersion: v1
@@ -16,3 +17,4 @@ metadata:
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: {{ template "qmig.dockerSecret" . }}
+{{- end }}
