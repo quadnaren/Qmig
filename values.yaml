@@ -26,7 +26,7 @@ secret:
 
 ## Required docker registry information to pull images from
 imageCredentials:
-  ## @param imageCredentials.enabled create docker pull secret Default: true
+  ## @param imageCredentials.create create docker pull secret Default: true
   create: true
   ## @param imageCredentials.secretName Name for docker secret Default: "" (name: qmig-docker)
   secretName: "" 
