@@ -1,7 +1,8 @@
+{{- if .Values.db.enabled }}
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: sqlconfig.sh
+  name: {{ template "qmig.db.fullname" . }}-loader
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "qmig.db.labels" . | nindent 4 }}
@@ -16,3 +17,4 @@ data:
     {{- else }}
     {{- tpl (.Files.Get "files/db-sh.sh") . | nindent 4 }}
     {{- end }}
+{{- end }}

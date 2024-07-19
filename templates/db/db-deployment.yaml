@@ -1,3 +1,4 @@
+{{- if .Values.db.enabled }}
 {{- $nodeSelector := .Values.db.nodeSelector }}
 {{- $affinity := .Values.db.affinity }}
 {{- $tolerations := .Values.db.tolerations }}
@@ -84,7 +85,7 @@ spec:
       volumes:
         - name: sqlconfig-sh
           configMap:
-            name: sqlconfig.sh
+            name: {{ template "qmig.db.fullname" . }}-loader
         - name: {{ $pvcTemp }}
           emptyDir: {}
         - name: {{ $pvc }}
@@ -97,3 +98,4 @@ spec:
       {{- if .Values.db.extraVolumes }}
         {{- toYaml .Values.db.extraVolumes | nindent 8 }}
       {{- end }}
+{{- end }}

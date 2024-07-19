@@ -108,7 +108,7 @@ spec:
                   {{- include "qmig.airflow.scheduler_startup_check_command" . | indent 14 }}
                 {{- end }}
           volumeMounts:
-          {{- include "qmig.airflow.dataMounts" (dict "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
+          {{- include "qmig.airflow.dataMounts" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
           {{- if .Values.airflow.scheduler.extraVolumeMounts }}
             {{- toYaml .Values.airflow.scheduler.extraVolumeMounts | nindent 10 }}
           {{- end }}

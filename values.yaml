@@ -74,7 +74,7 @@ shared:
 
     ## Subdirectory of data Persistent Volume to mount
     ## Useful if the volume's root directory is not empty
-    subPath: ""
+    subPath: "datas"
 
     ## data Persistent Volume size
     size: 5Gi
@@ -413,6 +413,16 @@ eng:
 ## @param db.image.pullPolicy DB component pull policy Default: "IfNotPresent"
 ## @param db.imagePullSecrets DB component pull secrets Default: {}
 db:
+  ## @param db.enabled Provision the postgres deployment Default: true
+  enabled: true
+  ## @param db.dbConnection.hostname Provide the hostname if used external connection Default: true
+  ## @param db.dbConnection.username username for connection to DB Default: "postgres"
+  ## @param db.dbConnection.port port for connection to DB Default: "5432"
+  dbConnection:
+    hostname: ""
+    username: "postgres"
+    port: "5432"
+
   name: "db"
   replicas: 1
   strategy: "Recreate"

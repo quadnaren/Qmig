@@ -137,7 +137,7 @@ spec:
             failureThreshold: {{ .Values.airflow.webserver.startupProbe.failureThreshold | default 6 }}
             periodSeconds: {{ .Values.airflow.webserver.startupProbe.periodSeconds | default 10  }}
           volumeMounts:
-          {{- include "qmig.airflow.dataMounts" (dict "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
+          {{- include "qmig.airflow.dataMounts" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
           {{- if .Values.airflow.webserver.extraVolumeMounts }}
             {{- toYaml .Values.airflow.webserver.extraVolumeMounts | nindent 10 }}
           {{- end }}
