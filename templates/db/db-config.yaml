@@ -1,3 +1,4 @@
+{{- if .Values.db.enabled }}
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -16,3 +17,4 @@ data:
     {{- else }}
     {{- tpl (.Files.Get "files/db-sh.sh") . | nindent 4 }}
     {{- end }}
+{{- end }}

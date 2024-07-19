@@ -1,3 +1,4 @@
+{{- if .Values.db.enabled }}
 {{- $nodeSelector := .Values.db.nodeSelector }}
 {{- $affinity := .Values.db.affinity }}
 {{- $tolerations := .Values.db.tolerations }}
@@ -97,3 +98,4 @@ spec:
       {{- if .Values.db.extraVolumes }}
         {{- toYaml .Values.db.extraVolumes | nindent 8 }}
       {{- end }}
+{{- end }}

@@ -178,11 +178,15 @@ component: {{ .Values.db.name | quote }}
 {{- end -}}
 
 {{- define "qmig.db.hostname" -}}
+{{- if .Values.db.enabled -}}
 {{- include "qmig.db.fullname" . -}}.{{- printf "%s" .Release.Namespace -}}.svc.{{- printf "%s" .Values.clusterDomain -}}
+{{- else -}}
+{{- printf "%s" .Values.db.dbConnection.hostname | required ".Values.db.dbConnection.hostname is required." -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "qmig.db.username" -}}
-{{- printf "postgres" -}}
+{{- printf "%s" .Values.db.dbConnection.username -}}
 {{- end -}}
 
 {{- define "qmig.db.password" -}}
@@ -190,11 +194,7 @@ component: {{ .Values.db.name | quote }}
 {{- end -}}
 
 {{- define "qmig.db.port" -}}
-{{ if hasKey .Values.db.env "POSTGRES_PORT" }}
-{{- .Values.db.env.POSTGRES_PORT | print -}}
-{{ else }}
-{{- "5432" -}}
-{{ end }} 
+{{- printf "%s" .Values.db.dbConnection.port -}}
 {{- end -}}
 
 {{- define "qmig.db.env" -}}

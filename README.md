@@ -228,6 +228,10 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 ### Metadata Database
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
+| db.enabled Provision the postgres deployment | true |
+| db.dbConnection.hostname Provide the hostname if used external connection | "" (Auto Generates) |
+| db.dbConnection.username username for connection to DB | "postgres" |
+| db.dbConnection.port port for connection to DB | "5432" |
 | db.name | Name for DB component | "db" | 
 | db.replicas | Number of DB component replicas | 1 | 
 | db.strategy | Update strategy for DB component pods | "Recreate" | 

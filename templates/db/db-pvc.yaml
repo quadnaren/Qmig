@@ -1,3 +1,4 @@
+{{- if .Values.db.enabled }}
 {{- if .Values.db.persistentVolume.enabled -}}
 {{- if not .Values.db.persistentVolume.existingClaim -}}
 apiVersion: v1
@@ -29,3 +30,4 @@ spec:
       storage: "{{ .Values.db.persistentVolume.size }}"
 {{- end -}}
 {{- end -}}
+{{- end }}
