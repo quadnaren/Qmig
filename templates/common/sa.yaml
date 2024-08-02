@@ -25,6 +25,7 @@ rules:
   - apiGroups: [""]
     resources:
       - pods
+      - "pods/exec"
       - secrets
     verbs: ["get", "list", "create", "update", "delete"]
   - apiGroups: ["batch"]
@@ -44,33 +45,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: {{ template "qmig.serviceAccount" . }}-role
-subjects:
-- namespace: {{ .Release.Namespace }} 
-  kind: ServiceAccount
-  name: {{ template "qmig.serviceAccount" . }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: {{ template "qmig.serviceAccount" . }}-crole
-  labels:
-    {{- include "qmig.serviceAccount.labels" . | nindent 4 }}
-rules:
-  - apiGroups: [""]
-    resources:
-      - namespaces
-    verbs: ["get", "list"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: {{ template "qmig.serviceAccount" . }}-crolebinding
-  labels:
-    {{- include "qmig.serviceAccount.labels" . | nindent 4 }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: {{ template "qmig.serviceAccount" . }}-crole
 subjects:
 - namespace: {{ .Release.Namespace }} 
   kind: ServiceAccount
