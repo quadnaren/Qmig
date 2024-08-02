@@ -165,6 +165,7 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | serviceAccount.annotations | Additional custom annotations for the ServiceAccount | {} | 
 | serviceAccount.labels | Labels for ServiceAccount | {} | 
 | rbac.create | Create Role and RoleBinding | true | 
+| rbac.namespaced | Restrict to namespaced role | false |
 ### App Components
 | Property | Description | Default | 
 | :--- | :--- | :--- | 

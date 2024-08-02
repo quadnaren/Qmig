@@ -193,17 +193,18 @@ serviceAccount:
   name: ""
   ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount Default: {}
   annotations: {}
-
   ## @param serviceAccount.labels Labels for ServiceAccount Default: {}
   labels: {}
 
 ## Enable RBAC (default on most clusters these days)
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
-## @param rbac.create Create Role and RoleBinding Default: true
+## @param rbac.create Create Role, ClusterRole, RoleBinding and ClusterRoleBinding Default: true
+## @param rbac.namespaced Restrict to namespaced role Default: false
 rbac:
   ## - if `false`, you must create a custom Role and RoleBinding for the ServiceAccount defined in `serviceAccount.name`
   create: true
+  namespaced: false
 
 ## App component
 ## @param app.name Name for App component Default: "app"
