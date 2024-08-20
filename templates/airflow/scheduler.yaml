@@ -77,7 +77,9 @@ spec:
           image: {{ template "qmig.airflow.image" . }}
           securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources: {{- toYaml .Values.airflow.scheduler.resources | nindent 12 }}
-          env: {{- include "qmig.airflow.env" . | nindent 12 }}
+          env:
+          {{- include "qmig.airflow.env" . | nindent 12 }}
+          {{- include "qmig.project.env" . | nindent 12 }}
           {{- if .Values.airflow.scheduler.command }}
           command: {{ tpl (toYaml .Values.airflow.scheduler.command) . | nindent 12 }}
           {{- end }}

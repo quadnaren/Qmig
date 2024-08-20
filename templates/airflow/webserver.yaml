@@ -91,7 +91,9 @@ spec:
           {{- end }}
           securityContext: {{ $containerSecurityContext | nindent 12 }}
           resources: {{- toYaml .Values.airflow.webserver.resources | nindent 12 }}
-          env: {{- include "qmig.airflow.env" . | nindent 12 }}
+          env: 
+          {{- include "qmig.airflow.env" . | nindent 12 }}
+          {{- include "qmig.project.env" . | nindent 12 }}
           ports:
             - name: airflow-ui
               containerPort: {{ .Values.airflow.webserver.service.port }}

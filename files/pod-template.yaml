@@ -25,6 +25,7 @@ spec:
         - name: AIRFLOW__CORE__EXECUTOR
           value: LocalExecutor
         {{- include "qmig.airflow.env" . | nindent 8 }}
+        {{- include "qmig.project.env" . | nindent 8 }}
       imagePullPolicy: {{ .Values.airflow.image.pullPolicy }}
       image: {{ template "qmig.airflow.image" . }}
       securityContext: {{ $containerSecurityContext | nindent 8 }}
