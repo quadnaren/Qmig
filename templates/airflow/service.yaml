@@ -12,7 +12,7 @@ metadata:
 spec:
   type: {{ .Values.airflow.webserver.service.type }}
   selector:
-    {{- include "qmig.airflow.labels" . | nindent 4 }}
+    {{- include "qmig.airflow.selectorLabels" . | nindent 4 }}
     component: webserver
   ports:
     - port: {{ .Values.airflow.webserver.service.port }}

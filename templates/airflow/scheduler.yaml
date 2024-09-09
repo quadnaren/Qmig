@@ -21,12 +21,12 @@ spec:
   replicas: {{ .Values.airflow.scheduler.replicas }}
   selector:
     matchLabels:
-      {{- include "qmig.airflow.labels" . | nindent 6 }}
+      {{- include "qmig.airflow.selectorLabels" . | nindent 6 }}
       component: scheduler
   template:
     metadata:
       labels:
-        {{- include "qmig.airflow.labels" . | nindent 8 }}
+        {{- include "qmig.airflow.selectorLabels" . | nindent 8 }}
         component: scheduler
       annotations:
         {{- if .Values.airflow.scheduler.safeToEvict }}

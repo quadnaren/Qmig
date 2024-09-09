@@ -30,12 +30,12 @@ spec:
     {{- end }}
   selector:
     matchLabels:
-      {{- include "qmig.airflow.labels" . | nindent 6 }}
+      {{- include "qmig.airflow.selectorLabels" . | nindent 6 }}
       component: webserver
   template:
     metadata:
       labels:
-        {{- include "qmig.airflow.labels" . | nindent 8 }}
+        {{- include "qmig.airflow.selectorLabels" . | nindent 8 }}
         component: webserver
       annotations:
         {{- if .Values.airflow.webserver.safeToEvict }}
