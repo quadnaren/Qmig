@@ -92,6 +92,50 @@ component: {{ include "qmig.ingresscontroller.fullname" . | quote }}
 {{- end }}
 {{- end -}}
 
+
+{{/*
+All specification for Gateways Controller
+*/}}
+{{- define "qmig.nginxFabric.fullname" -}}
+{{- printf "%s" .Values.nginxFabric.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "qmig.nginxFabric.selectorLabels" -}}
+component: {{ .Values.nginxFabric.name | quote }}
+{{ include "qmig.selectorLabels" . }}
+{{- with .Values.nginxFabric.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{- end -}}
+
+{{- define "qmig.nginxFabric.labels" -}}
+{{ include "qmig.nginxFabric.selectorLabels" . }}
+{{ include "qmig.labels" . }}
+{{- end -}}
+
+{{- define "qmig.gateway.labels" -}}
+{{ include "qmig.selectorLabels" . }}
+{{- with .Values.gateway.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{- end -}}
+
+{{- define "qmig.gateway.fullname" -}}
+{{- printf "%s" .Values.gateway.name | default  (printf "%s-gateway" .Release.Name) -}}
+{{- end -}}
+
+{{- define "qmig.httpRoutes.labels" -}}
+{{ include "qmig.selectorLabels" . }}
+{{- with .Values.httpRoutes.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{- end -}}
+
+{{- define "qmig.httpRoutes.fullname" -}}
+{{- printf "%s" .Values.httpRoutes.name | default  (printf "%s-routes" .Release.Name) -}}
+{{- end -}}
+
+
 {{/*
 All specification for app module
 */}}

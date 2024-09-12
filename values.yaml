@@ -194,6 +194,129 @@ ingress:
   ##     - app.local
   ##   secretName: app.local-tls
 
+nginx-gateway-fabric:
+  enabled: true
+  metrics:
+    enable: false
+
+## The Application requires the ingress to be exposed application
+## Enable to quickly install controller within the helm
+## https://kubernetes.github.io/ingress-nginx/deploy/
+nginxFabric:
+  ## @param ingressController.enabled Whether or not to install the ingressController Default: false
+  enabled: false
+  ## @param ingressController.name The name of the ingressController to use Default: "" (name: nginx-ingress)
+  name: "nginx-fabric"
+  ## @param ingressController.labels Labels for ingressController Default: {}
+  labels: {}
+
+  ## @param app.annotations Add extra annotations to the App Component Default: {}
+  annotations: {}
+  ## @param app.podAnnotations Add extra Pod annotations to the App Component pods Default: {}
+  podAnnotations: {}
+
+  gatewayClassName: nginx
+
+  fabricImage:
+    # -- The NGINX Gateway Fabric image to use
+    repository: ghcr.io/nginxinc/nginx-gateway-fabric
+    tag: "1.3.0"
+    pullPolicy: "IfNotPresent"
+
+  ## @param ingressController.image.repository Ingress image repository for Nginx Inc Default: nginx/nginx-ingress
+  ## @param ingressController.image.tag Ingress image tag/version for Nginx Inc Default: "3.6.1"
+  nginxImage:
+    repository: ghcr.io/nginxinc/nginx-gateway-fabric/nginx
+    tag: "1.3.0"
+    pullPolicy: "IfNotPresent"
+
+  ## @param ingressController.imagePullSecrets Ingress Controller component pull secrets Default: {}
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  imagePullSecrets: {}
+
+  ## @param ingressController.securityContexts.pod default security context for Ingress Controller pods Default: {}
+  ## @param ingressController.securityContexts.container default security context for Ingress Controller containers Default: {}
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  securityContexts:
+    pod:
+      fsGroup: 1001
+      runAsNonRoot: true
+    container:
+      fabric:
+        readOnlyRootFilesystem: true
+        runAsUser: 102
+        runAsGroup: 1001
+        allowPrivilegeEscalation: false
+        capabilities:
+          add:
+          - KILL
+          drop:
+          - ALL
+      nginx:
+        readOnlyRootFilesystem: true
+        runAsUser: 101
+        runAsGroup: 1001
+        capabilities:
+          add:
+          - NET_BIND_SERVICE
+          drop:
+          - ALL
+
+  ## @param ingressController.tolerations Tolerations for Ingress Controller pods assignment Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+  ## @param ingressController.affinity Affinity for Ingress Controller pods assignment (evaluated as a template) Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+  ## @param ingressController.nodeSelector Node labels for Ingress Controller pods assignment Default: {}
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  nodeSelector: {}
+  ## @param ingressController.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  resources:
+    limits:
+      cpu: 300m
+      memory: 394Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+## Qmigrator ingress parameters
+## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+gateway:
+  name: ""
+  ## @param ingress.enabled Enable ingress record generation Default: true
+  enabled: false
+  ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
+  ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
+  ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
+  gatewayClassName: "nginx"
+  ## @param ingress.annotations Additional annotations for the Ingress resource Default: {}
+  annotations: {}
+  ## @param ingress.labels Add labels for the Ingress Default: {}
+  labels: {}
+  allowedRoutes:
+    namespaces:
+      from: Same
+
+httpRoutes:
+  name: ""
+  ## @param ingress.enabled Enable ingress record generation Default: true
+  enabled: false
+  ## @param ingress.className IngressClass that will be used to implement the Ingress (Kubernetes 1.18+) Default: "" (From Kubernetes)
+  ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
+  ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
+  gatewayClassName: "nginx"
+  ## @param ingress.annotations Additional annotations for the Ingress resource Default: {}
+  annotations: {}
+  ## @param ingress.labels Add labels for the Ingress Default: {}
+  labels: {}
+  
+  ## @param ingress.host Default host for the ingress record Default: ""
+  hosts: []
+  parents:
+    - name: '{{- include "qmig.gateway.fullname" . }}'
+      namespace: '{{ .Release.Namespace }}'
 
 ## Service account for QMigrator pods to use.
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/

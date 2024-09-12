@@ -1,0 +1,188 @@
+{{- if .Values.nginxFabric.enabled -}}
+{{- $nodeSelector := .Values.nginxFabric.nodeSelector }}
+{{- $affinity := .Values.nginxFabric.affinity }}
+{{- $tolerations := .Values.nginxFabric.tolerations }}
+{{- $securityContext := include "podSecurityContext" (list . .Values.nginxFabric) }}
+{{- $fabricContainerSecurityContext := toYaml .Values.nginxFabric.securityContexts.container.fabric | print }}
+{{- $nginxContainerSecurityContext := toYaml .Values.nginxFabric.securityContexts.container.nginx | print }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "qmig.nginxFabric.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "qmig.nginxFabric.labels" . | nindent 4 }}
+{{- if .Values.nginxFabric.annotations }}
+  annotations:
+{{ toYaml .Values.nginxFabric.annotations | indent 4 }}
+{{- end }}
+spec:
+  externalTrafficPolicy: Local
+  type: LoadBalancer
+  selector:
+    {{- include "qmig.nginxFabric.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qmig.nginxFabric.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "qmig.nginxFabric.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+    {{- include "qmig.nginxFabric.selectorLabels" . | nindent 6 }}
+    {{- if .Values.nginxFabric.annotations }}
+    annotations:
+      {{- toYaml .Values.nginxFabric.annotations | nindent 6 }}
+    {{- end }}
+  template:
+    metadata:
+      labels:
+      {{- include "qmig.nginxFabric.selectorLabels" . | nindent 8 }}
+      {{- if .Values.nginxFabric.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.nginxFabric.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- include "qmig.dockerauthList" (list . .Values.nginxFabric) | indent 6 }}
+      containers:
+      - args:
+        - static-mode
+        - --gateway-ctlr-name=gateway.nginx.org/{{ template "qmig.nginxFabric.fullname" . }}-controller
+        - --gatewayclass={{ .Values.nginxFabric.gatewayClassName }}
+        - --config={{ template "qmig.nginxFabric.fullname" . }}-config
+        - --service={{ template "qmig.nginxFabric.fullname" . }}
+        - --metrics-disable
+        - --health-port=8081
+        - --leader-election-lock-name={{ template "qmig.nginxFabric.fullname" . }}-leader-election
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        image: "{{ .Values.nginxFabric.fabricImage.repository }}:{{ .Values.nginxFabric.fabricImage.tag }}"
+        imagePullPolicy: {{ .Values.nginxFabric.fabricImage.pullPolicy }}
+        name: {{ template "qmig.nginxFabric.fullname" . }}
+        resources:
+          {{- toYaml .Values.nginxFabric.resources | nindent 10 }}
+        securityContext: {{ $fabricContainerSecurityContext | nindent 10 }}
+        ports:
+        - name: health
+          containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: health
+          initialDelaySeconds: 5
+          periodSeconds: 1
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/conf.d
+        - name: nginx-stream-conf
+          mountPath: /etc/nginx/stream-conf.d
+        - name: module-includes
+          mountPath: /etc/nginx/module-includes
+        - name: nginx-secrets
+          mountPath: /etc/nginx/secrets
+        - name: nginx-run
+          mountPath: /var/run/nginx
+        - name: nginx-includes
+          mountPath: /etc/nginx/includes
+      - image: "{{ .Values.nginxFabric.nginxImage.repository }}:{{ .Values.nginxFabric.nginxImage.tag }}"
+        imagePullPolicy: {{ .Values.nginxFabric.nginxImage.pullPolicy }}
+        name: nginx
+        resources:
+          {{- toYaml .Values.nginxFabric.resources | nindent 10 }}
+        securityContext: {{ $nginxContainerSecurityContext | nindent 10 }}
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/conf.d
+        - name: nginx-stream-conf
+          mountPath: /etc/nginx/stream-conf.d
+        - name: module-includes
+          mountPath: /etc/nginx/module-includes
+        - name: nginx-secrets
+          mountPath: /etc/nginx/secrets
+        - name: nginx-run
+          mountPath: /var/run/nginx
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-includes
+          mountPath: /etc/nginx/includes
+      securityContext: {{ $securityContext | nindent 8 }}
+      nodeSelector: {{- toYaml $nodeSelector | nindent 8 }}
+      affinity: {{- toYaml $affinity | nindent 8 }}
+      tolerations: {{- toYaml $tolerations | nindent 8 }}
+      serviceAccountName: {{ template "qmig.nginxFabric.fullname" . }}
+      automountServiceAccountToken: true
+      terminationGracePeriodSeconds: 30
+      shareProcessNamespace: true
+      volumes:
+      - name: nginx-conf
+        emptyDir: {}
+      - name: nginx-stream-conf
+        emptyDir: {}
+      - name: module-includes
+        emptyDir: {}
+      - name: nginx-secrets
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-includes
+        emptyDir: {}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: {{ .Values.nginxFabric.gatewayClassName }}
+  labels:
+  {{- include "qmig.nginxFabric.labels" . | nindent 4 }}
+  {{- if .Values.nginxFabric.annotations }}
+  annotations:
+    {{ toYaml .Values.nginxFabric.annotations | indent 4 }}
+  {{- end }}
+spec:
+  controllerName: gateway.nginx.org/{{ template "qmig.nginxFabric.fullname" . }}-controller
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: nginxFabric
+metadata:
+  name: {{ template "qmig.nginxFabric.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "qmig.nginxFabric.labels" . | nindent 4 }}
+  {{- if .Values.nginxFabric.annotations }}
+  annotations:
+    {{ toYaml .Values.nginxFabric.annotations | indent 4 }}
+  {{- end }}
+spec:
+  logging:
+    level: info
+{{- end }}
