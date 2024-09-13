@@ -172,9 +172,9 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | httpRoutes.className | GatewayClass name | "nginx"
 | httpRoutes.annotations | Additional annotations for the httpRoutes | {}
 | httpRoutes.labels | Add labels for the httpRoutes | {}
-| httpRoutes.labels | define route parents to gateway | -
-| httpRoutes.host | hostnames in routes record | []
-| httpRoutes.redirectHttps | create redirect filter to http | false
+| httpRoutes.parentRefs | define route parents to gateway | -
+| httpRoutes.hostnames | hostnames in routes record | []
+| httpRoutes.redirectHttp | create redirect filter http to https | false
 ### Service Account
 | Property | Description | Default | 
 | :--- | :--- | :--- | 
