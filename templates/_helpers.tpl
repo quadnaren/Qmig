@@ -140,6 +140,16 @@ component: {{ .Values.app.name | quote }}
 {{- printf "%s-%s" .Release.Name .Values.app.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "qmig.app.volumeMounts" }}
+- mountPath: /tmp
+  name: {{ .pvctemp }}
+{{- end }}
+
+{{- define "qmig.app.volume" }}
+- name: {{ .pvctemp }}
+  emptyDir: {}
+{{- end }}
+
 
 {{/*
 All specification for eng module

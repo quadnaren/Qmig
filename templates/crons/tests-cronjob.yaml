@@ -79,7 +79,7 @@ spec:
               {{- end }}
           restartPolicy: {{ .Values.tests.restartPolicy }}
           volumes:
-          {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 10 }}
+          {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 12 }}
           {{- if .Values.tests.extraVolumes }}
             {{- toYaml .Values.tests.extraVolumes | nindent 12 }}
           {{- end }}

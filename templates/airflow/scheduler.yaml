@@ -115,8 +115,8 @@ spec:
             {{- toYaml .Values.airflow.scheduler.extraVolumeMounts | nindent 10 }}
           {{- end }}
       volumes:
-      {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 10 }}
-      {{- include "qmig.airflow.volume" . | indent 10 }}
+      {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 8 }}
+      {{- include "qmig.airflow.volume" . | indent 8 }}
       {{- if .Values.airflow.extraVolumes }}
         {{- toYaml .Values.airflow.extraVolumes | nindent 8 }}
       {{- end }}

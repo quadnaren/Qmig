@@ -3,6 +3,7 @@
 {{- $tolerations := .Values.app.tolerations }}
 {{- $securityContext := include "podSecurityContext" (list . .Values.app) }}
 {{- $containerSecurityContext := include "containerSecurityContext" (list . .Values.app) }}
+{{- $pvcTemp := printf "%s-%s" (include "qmig.app.fullname" .) "empty" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -90,11 +91,13 @@ spec:
             successThreshold: {{ .Values.app.readinessProbe.successThreshold | default 1 }}
             failureThreshold: {{ .Values.app.readinessProbe.failureThreshold | default 3}}
           {{- end }}
-          {{- if .Values.app.extraVolumeMounts }}
           volumeMounts:
+          {{- include "qmig.app.volumeMounts" (dict "Values" .Values "pvctemp" $pvcTemp ) | indent 12 }}
+          {{- if .Values.app.extraVolumeMounts }}
             {{- toYaml .Values.app.extraVolumeMounts | nindent 12 }}
           {{- end }}
-      {{- if .Values.app.extraVolumes }}
       volumes:
+      {{- include "qmig.app.volume" (dict "Values" .Values "pvctemp" $pvcTemp ) | indent 8 }}
+      {{- if .Values.app.extraVolumes }}
         {{- toYaml .Values.app.extraVolumes | nindent 8 }}
       {{- end }}

@@ -101,7 +101,7 @@ spec:
             {{- toYaml .Values.eng.extraVolumeMounts | nindent 12 }}
           {{- end }}
       volumes:
-      {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 10 }}
+      {{- include "qmig.shared.volume" (dict "Values" .Values "pvcname" $pvc "pvctemp" $pvcTemp ) | indent 8 }}
       {{- if .Values.eng.extraVolumes }}
         {{- toYaml .Values.eng.extraVolumes | nindent 8 }}
       {{- end }}
