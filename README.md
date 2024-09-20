@@ -157,6 +157,24 @@ minikube start --mount --mount-string={LOCAL_PATH}:/hostpc
 | ingress.labels | Add labels for the Ingress | {} | 
 | ingress.host | Default host for the ingress record | "" | 
 | ingress.tls | TLS configuration for additional hostname(s) to be covered with this ingress record | {} | 
+### Gateway
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| gateway.enabled | Enable create gateway | false
+| gateway.className | GatewayClass that will be used to implement the gateway | "nginx"
+| gateway.annotations | Additional annotations for the gateway resource | {}
+| gateway.labels | Add labels for the gateway | {}
+| gateway.listeners | Add listerners for the gateway | - 
+### HTTPRoute
+| Property | Description | Default | 
+| :--- | :--- | :--- | 
+| httpRoutes.enabled | Create the routes on gateway | false
+| httpRoutes.className | GatewayClass name | "nginx"
+| httpRoutes.annotations | Additional annotations for the httpRoutes | {}
+| httpRoutes.labels | Add labels for the httpRoutes | {}
+| httpRoutes.parentRefs | define route parents to gateway | -
+| httpRoutes.hostnames | hostnames in routes record | []
+| httpRoutes.redirectHttp | create redirect filter http to https | false
 ### Service Account
 | Property | Description | Default | 
 | :--- | :--- | :--- | 

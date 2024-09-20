@@ -182,6 +182,46 @@ ingress:
   ##     - app.local
   ##   secretName: app.local-tls
 
+## Qmigrator Gateway API parameters
+## ref: https://gateway-api.sigs.k8s.io/api-types/gateway/
+gateway:
+  name: ""
+  ## @param gateway.enabled Enable create gateway Default: false
+  enabled: false
+  ## @param gateway.className GatewayClass that will be used to implement the gateway Default: "nginx"
+  gatewayClassName: "nginx"
+  ## @param gateway.annotations Additional annotations for the gateway resource Default: {}
+  annotations: {}
+  ## @param gateway.labels Add labels for the gateway Default: {}
+  labels: {}
+  ## @param gateway.listeners Add listerners for the gateway Default: - 
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+      namespaces:
+        from: Same
+
+httpRoutes:
+  name: ""
+  ## @param httpRoutes.enabled Create the routes on gateway Default: false
+  enabled: false
+  ## @param httpRoutes.className GatewayClass name Default: "nginx"
+  gatewayClassName: "nginx"
+  ## @param httpRoutes.annotations Additional annotations for the httpRoutes Default: {}
+  annotations: {}
+  ## @param httpRoutes.labels Add labels for the httpRoutes Default: {}
+  labels: {}
+  ## @param httpRoutes.parentRefs define route parents to gateway Default: -
+  parentRefs:
+    - name: '{{- include "qmig.gateway.fullname" . }}'
+      namespace: '{{ .Release.Namespace }}'
+      sectionName: http
+  ## @param httpRoutes.hostnames hostnames in routes record Default: []
+  hostnames: []
+  ## @param httpRoutes.redirectHttp create redirect filter http to https Default: false
+  redirectHttp: false
 
 ## Service account for QMigrator pods to use.
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
@@ -193,6 +233,7 @@ serviceAccount:
   name: ""
   ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount Default: {}
   annotations: {}
+
   ## @param serviceAccount.labels Labels for ServiceAccount Default: {}
   labels: {}
 
@@ -204,7 +245,7 @@ serviceAccount:
 rbac:
   ## - if `false`, you must create a custom Role and RoleBinding for the ServiceAccount defined in `serviceAccount.name`
   create: true
-  namespaced: false
+  namespaced: true
 
 ## App component
 ## @param app.name Name for App component Default: "app"

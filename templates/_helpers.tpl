@@ -92,6 +92,34 @@ component: {{ include "qmig.ingresscontroller.fullname" . | quote }}
 {{- end }}
 {{- end -}}
 
+
+{{/*
+All specification for Gateways Controller
+*/}}
+
+{{- define "qmig.gateway.labels" -}}
+{{ include "qmig.selectorLabels" . }}
+{{- with .Values.gateway.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{- end -}}
+
+{{- define "qmig.gateway.fullname" -}}
+{{- printf "%s" .Values.gateway.name | default  (printf "%s-gateway" .Release.Name) -}}
+{{- end -}}
+
+{{- define "qmig.httpRoutes.labels" -}}
+{{ include "qmig.selectorLabels" . }}
+{{- with .Values.httpRoutes.labels }}
+{{ toYaml . | print }}
+{{- end }}
+{{- end -}}
+
+{{- define "qmig.httpRoutes.fullname" -}}
+{{- printf "%s" .Values.httpRoutes.name | default  (printf "%s-routes" .Release.Name) -}}
+{{- end -}}
+
+
 {{/*
 All specification for app module
 */}}
@@ -111,6 +139,16 @@ component: {{ .Values.app.name | quote }}
 {{- define "qmig.app.fullname" -}}
 {{- printf "%s-%s" .Release.Name .Values.app.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "qmig.app.volumeMounts" }}
+- mountPath: /tmp
+  name: {{ .pvctemp }}
+{{- end }}
+
+{{- define "qmig.app.volume" }}
+- name: {{ .pvctemp }}
+  emptyDir: {}
+{{- end }}
 
 
 {{/*
@@ -326,7 +364,6 @@ imagePullSecrets:
   {{- end }}
   {{- end -}}
 {{- end -}}
-
 
 {{- define "containerSecurityContext" -}}
   {{- $ := index . 0 -}}
