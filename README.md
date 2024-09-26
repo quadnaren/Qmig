@@ -53,7 +53,7 @@ https://github.com/nginxinc/kubernetes-ingress
 > [!IMPORTANT]
 DO NOT USE ReadWriteMany or Shared Persistent volume given here to the Metadata DB (Postgres) & Cache Component
 
-> [!Tips]
+> [!TIP]
 Check more [examples](example) in the repository
 
 ### Docker Desktop volume (Windows)
