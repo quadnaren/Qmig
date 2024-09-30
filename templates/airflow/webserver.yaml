@@ -14,6 +14,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "qmig.airflow.labels" . | nindent 4 }}
+    component: webserver
   {{- if .Values.airflow.webserver.annotations }}
   annotations: {{- toYaml .Values.airflow.webserver.annotations | nindent 4 }}
   {{- end }}
